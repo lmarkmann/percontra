@@ -38,16 +38,16 @@
 
 Original plan covered forms, kanban, and admin tables. This template ships showcase, login, and chat.
 
-| Surface                        | WCAG                | Status   | Notes                                                                                 |
-| ------------------------------ | ------------------- | -------- | ------------------------------------------------------------------------------------- |
-| Login form (`/login`)          | 3.3.1, 3.3.2, 4.1.2 | **Pass** | `<label htmlFor>`; `aria-invalid` + `aria-describedby`; `role="alert"` on errors      |
-| Kanban / admin tables          | -                   | N/A      | Not in template                                                                       |
-| Chat composer                  | Labels, errors      | **Pass** | Icon `aria-label`; offline `aria-describedby`; transport `role="alert"`               |
-| States tablist                 | 2.1.1               | **Pass** | Arrow/Home/End with roving `tabIndex` + `aria-controls`                               |
-| Not-found title                | 1.3.1               | **Pass** | Full-page 404 uses `h1` (EmptyTitle stays `h2` for in-page empties)                   |
-| Touch targets (icon / default) | 2.5.5               | **Pass** | `after:size-11` = 44px hit area on hitArea sizes                                      |
-| Empty titles                   | 1.3.1               | **Pass** | `EmptyTitle` renders `h2`                                                             |
-| Static shell vs React home     | Consistency         | **Pass** | `index.html` mirrors outcome headline, rail, Charter body (2026-07-09)                |
+| Surface                        | WCAG                | Status   | Notes                                                                                                                                |
+| ------------------------------ | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Login form (`/login`)          | 3.3.1, 3.3.2, 4.1.2 | **Pass** | `<label htmlFor>`; `aria-invalid` + `aria-describedby`; `role="alert"` on errors                                                     |
+| Kanban / admin tables          | -                   | N/A      | Not in template                                                                                                                      |
+| Chat composer                  | Labels, errors      | **Pass** | Icon `aria-label`; offline `aria-describedby`; transport `role="alert"`                                                              |
+| States tablist                 | 2.1.1               | **Pass** | Arrow/Home/End with roving `tabIndex` + `aria-controls`                                                                              |
+| Not-found title                | 1.3.1               | **Pass** | Full-page 404 uses `h1` (EmptyTitle stays `h2` for in-page empties)                                                                  |
+| Touch targets (icon / default) | 2.5.5               | **Pass** | `after:size-11` = 44px hit area on hitArea sizes                                                                                     |
+| Empty titles                   | 1.3.1               | **Pass** | `EmptyTitle` renders `h2`                                                                                                            |
+| Static shell vs React home     | Consistency         | **Pass** | `index.html` mirrors outcome headline, rail, Charter body (2026-07-09)                                                               |
 | Color contrast                 | 1.4.3               | Pass     | Patina verdigris OKLCH accent; every pair measured, plus forced-colors and prefers-contrast layers (`docs/frontend/color-report.md`) |
 
 ## Web performance: auth waterfall and boot

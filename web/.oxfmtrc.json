@@ -49,12 +49,7 @@
 			"style",
 			"unknown"
 		],
-		"customGroups": [
-			{
-				"groupName": "internal",
-				"elementNamePattern": ["^@/", "^@/.*"]
-			}
-		]
+		"customGroups": []
 	},
 	"sortTailwindcss": {
 		"stylesheet": "./src/index.css",

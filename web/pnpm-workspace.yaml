@@ -31,4 +31,4 @@ allowBuilds:
 
 # Pin Vitest so a future dep bump cannot pull a second runner and split state. I have explicitly not migrated to Vite+ (`vp`) yet, as the stack is stable.
 overrides:
-  vitest: 4.1.10
+  vitest: 4.1.11
