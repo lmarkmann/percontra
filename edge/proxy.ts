@@ -3,10 +3,20 @@
 // plain DNS CNAME to the run.app hostname cannot do this job.
 type Env = {
 	ORIGIN: string;
-	/** Set both to close the site; leaving either unset passes every request through. */
+	/**
+	 * Set both to close the site. Leaving BOTH unset passes every request
+	 * through, which is the deliberate default. Setting one and leaving the
+	 * other blank is a misconfiguration and closes the site instead of opening
+	 * it, for the reason in `gateState` below.
+	 */
 	ACCESS_USER?: string;
 	ACCESS_PASSWORD?: string;
 };
+
+type GateState =
+	| { tag: "open" }
+	| { tag: "misconfigured"; missing: string }
+	| { tag: "closed"; user: string; password: string };
 
 /**
  * Compare without leaking length or position through timing.
@@ -24,10 +34,33 @@ function matches(a: string, b: string): boolean {
 	return difference === 0;
 }
 
-function authorized(request: Request, env: Env): boolean {
-	const { ACCESS_USER, ACCESS_PASSWORD } = env;
-	if (!ACCESS_USER || !ACCESS_PASSWORD) return true;
+/**
+ * A partially configured gate fails closed.
+ *
+ * This is not hypothetical. `op read ... | wrangler secret put` uploads an
+ * empty string when the op lookup fails, and wrangler reports success either
+ * way, so the site went live with a blank password. The previous version read
+ * that as "no gate configured" and served everything. Absence and blankness
+ * mean different things: nobody sets a secret to "" on purpose, so a blank one
+ * means somebody meant to close the site and the pipeline ate the value.
+ */
+function gateState(env: Env): GateState {
+	const user = env.ACCESS_USER;
+	const password = env.ACCESS_PASSWORD;
+	if (user === undefined && password === undefined) return { tag: "open" };
 
+	const cleanUser = user?.trim() ?? "";
+	const cleanPassword = password?.trim() ?? "";
+	if (cleanUser === "" || cleanPassword === "") {
+		return {
+			tag: "misconfigured",
+			missing: cleanUser === "" ? "ACCESS_USER" : "ACCESS_PASSWORD",
+		};
+	}
+	return { tag: "closed", user: cleanUser, password: cleanPassword };
+}
+
+function authorized(request: Request, user: string, password: string): boolean {
 	const header = request.headers.get("Authorization");
 	if (!header?.startsWith("Basic ")) return false;
 
@@ -43,8 +76,8 @@ function authorized(request: Request, env: Env): boolean {
 	if (separator === -1) return false;
 
 	return (
-		matches(decoded.slice(0, separator), ACCESS_USER) &&
-		matches(decoded.slice(separator + 1), ACCESS_PASSWORD)
+		matches(decoded.slice(0, separator), user) &&
+		matches(decoded.slice(separator + 1), password)
 	);
 }
 
@@ -54,7 +87,22 @@ export default {
 		// request never reaches Cloud Run, so neither the SPA bundle nor /api is
 		// served to it. That is the difference between this and the in-app gate,
 		// which can only hide a page whose code it has already handed over.
-		if (!authorized(request, env)) {
+		const gate = gateState(env);
+
+		if (gate.tag === "misconfigured") {
+			return new Response(
+				`Closed: ${gate.missing} is set but empty. Re-upload it, then redeploy.\n`,
+				{
+					status: 503,
+					headers: {
+						"Cache-Control": "no-store",
+						"X-Robots-Tag": "noindex, nofollow",
+					},
+				},
+			);
+		}
+
+		if (gate.tag === "closed" && !authorized(request, gate.user, gate.password)) {
 			return new Response("Not open yet.", {
 				status: 401,
 				headers: {

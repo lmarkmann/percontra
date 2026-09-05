@@ -10,16 +10,42 @@ proxies `percontra.dev` to Cloud Run. An unauthorized request never reaches the
 origin, so the SPA bundle is never served, `/api/*` is never reachable, and the
 DuckDB data behind it is never queried.
 
-Arm it with two Worker secrets. Unset either one and every request passes
-through, so it is opt-in and there is no way to lock yourself out by deploying.
+Arm it with two Worker secrets. Leaving **both** unset passes every request
+through, which is the deliberate default. Setting one and leaving the other
+blank closes the site with a 503 rather than opening it; see the note below.
+
+Create the credential once, then upload it. The value never appears in the
+shell, in history, or in process arguments.
 
 ```fish
-# stdin, never --text: the value stays out of shell history and process args
-printf '%s' 'percontra' | pnpm --dir edge exec wrangler secret put ACCESS_USER
-op read 'op://Private/percontra demo/password' \
-  | pnpm --dir edge exec wrangler secret put ACCESS_PASSWORD
-just deploy-edge
+op item create --account YCFB3FTIOJBXXEMIXKC24PTKRQ --vault Developer \
+  --category Login --title 'percontra demo' \
+  --generate-password='letters,digits,32' username=percontra
 ```
+
+```fish
+# A failed `op read` writes nothing to stdout and exits non-zero, but wrangler
+# accepts empty stdin and reports success. Land it in a file, assert the file is
+# non-empty, and only then upload. This is not belt and braces: it is exactly
+# how this gate once went live with a blank password.
+set -l tmp (mktemp)
+op read --account YCFB3FTIOJBXXEMIXKC24PTKRQ \
+  'op://Developer/percontra demo/password' > $tmp
+and test -s $tmp
+and printf '%s' 'percontra' | pnpm --dir edge exec wrangler secret put ACCESS_USER
+and pnpm --dir edge exec wrangler secret put ACCESS_PASSWORD < $tmp
+and just deploy-edge
+rm -P $tmp
+```
+
+Then prove it, rather than trusting the deploy output:
+
+```fish
+curl -s -o /dev/null -w '%{http_code}\n' https://percontra.dev/
+curl -s -o /dev/null -w '%{http_code}\n' https://percontra.dev/api/health
+```
+
+Both must be `401`. A `200` means the gate is not on, whatever wrangler said.
 
 Remove it the same way:
 
@@ -27,6 +53,13 @@ Remove it the same way:
 pnpm --dir edge exec wrangler secret delete ACCESS_PASSWORD
 just deploy-edge
 ```
+
+**A blank secret closes the site, it does not open it.** `wrangler secret put`
+uploads whatever it reads on stdin and reports success even when that is
+nothing, so a failed `op read` in a pipeline silently arms the gate with an
+empty password. Treating that as "no gate configured" is how the site served
+every request while looking configured. An unset pair is a decision; a blank
+one is an accident, so the Worker answers 503 and names the empty secret.
 
 Caveat worth knowing before the demo: basic auth is a browser-chrome prompt, not
 a page you control, and it is remembered per origin for the session. Judges will
