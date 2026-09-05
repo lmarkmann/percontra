@@ -4,73 +4,132 @@ Chips do not answer this question: the collision being judged is between the
 accent and the ready/approved marks, which only shows up when both are on the
 same row of the same table. So each direction renders the real thing.
 """
-import json, pathlib
-import palette as P
+
+import json
+import pathlib
+
+import palette
 
 here = pathlib.Path(__file__).parent
 M = json.loads((here / "measured.json").read_text())
-hexof = lambda o: next((v["hex"] for g in ("neutral",) for v in M[g].values() if v["oklch"] == o), None)
 
-def n(step): return M["neutral"][step]["hex"]
-def acc(d, step): return M["accents"][d][step]["hex"]
-def st(theme, name, role): return M["status"][theme][name][role]["hex"]
+
+def n(step):
+    return M["neutral"][step]["hex"]
+
+
+def acc(d, step):
+    return M["accents"][d][step]["hex"]
+
+
+def st(theme, name, role):
+    return M["status"][theme][name][role]["hex"]
+
 
 STATUSES = ["ready", "needs-decision", "blocked", "stale", "approved", "exported"]
-LABEL = {"ready": "Ready", "needs-decision": "Needs decision", "blocked": "Blocked",
-         "stale": "Stale", "approved": "Approved", "exported": "Exported"}
-NOTE = {"ready": "", "needs-decision": "", "blocked": "", "stale": "",
-        "approved": "", "exported": "destination not checked"}
+LABEL = {
+    "ready": "Ready",
+    "needs-decision": "Needs decision",
+    "blocked": "Blocked",
+    "stale": "Stale",
+    "approved": "Approved",
+    "exported": "Exported",
+}
+NOTE = {
+    "ready": "",
+    "needs-decision": "",
+    "blocked": "",
+    "stale": "",
+    "approved": "",
+    "exported": "destination not checked",
+}
 
 ROWS = [
     ("Chalbury Co-Invest L.P.", "639661", "4010 Management fee", "GBP", "182,400.00", "ready"),
-    ("Chalbury Co-Invest L.P.", "639661", "6200 Placement cost", "GBP", "45,000.00", "needs-decision"),
-    ("Kestrel Westvale Co-Invest LP", "995747", "1100 Capital call", "USD", "2,750,000.00", "approved"),
+    (
+        "Chalbury Co-Invest L.P.",
+        "639661",
+        "6200 Placement cost",
+        "GBP",
+        "45,000.00",
+        "needs-decision",
+    ),
+    (
+        "Kestrel Westvale Co-Invest LP",
+        "995747",
+        "1100 Capital call",
+        "USD",
+        "2,750,000.00",
+        "approved",
+    ),
     ("Kestrel Westvale Co-Invest LP", "995747", "8300 FX revaluation", "USD", "12,884.51", "stale"),
     ("Kestrel DJ3 Co-Invest LP", "518551", "9900 Suspense", "EUR", "603.20", "blocked"),
     ("Kestrel DJ3 Co-Invest LP", "518551", "4010 Management fee", "EUR", "96,150.00", "exported"),
 ]
 
+
 def theme_vars(theme, direction):
     if theme == "light":
-        base = {"bg": n("50"), "card": n("100"), "fg": n("800"), "muted": n("700"),
-                "hairline": n("200"), "input": n("500"),
-                "primary": acc(direction, "800"), "primary_fg": n("50")}
+        base = {
+            "bg": n("50"),
+            "card": n("100"),
+            "fg": n("800"),
+            "muted": n("700"),
+            "hairline": n("200"),
+            "input": n("500"),
+            "primary": acc(direction, "800"),
+            "primary_fg": n("50"),
+        }
     else:
-        base = {"bg": n("950"), "card": n("900"), "fg": n("100"), "muted": n("500"),
-                "hairline": n("800"), "input": n("600"),
-                "primary": acc(direction, "500"), "primary_fg": n("950")}
+        base = {
+            "bg": n("950"),
+            "card": n("900"),
+            "fg": n("100"),
+            "muted": n("500"),
+            "hairline": n("800"),
+            "input": n("600"),
+            "primary": acc(direction, "500"),
+            "primary_fg": n("950"),
+        }
     return base
 
+
 def table(theme, direction):
-    v = theme_vars(theme, direction)
-    out = [f'<table class="ledger"><thead><tr>'
-           f'<th>Entity</th><th>Batch</th><th>Account</th><th class="num">Amount</th><th>Status</th>'
-           f'</tr></thead><tbody>']
+    out = [
+        '<table class="ledger"><thead><tr>'
+        '<th>Entity</th><th>Batch</th><th>Account</th><th class="num">Amount</th><th>Status</th>'
+        "</tr></thead><tbody>"
+    ]
     for entity, batch, account, cur, amount, status in ROWS:
         mark, text = st(theme, status, "mark"), st(theme, status, "text")
-        tint = "transparent" if status in P.UNTINTED else st(theme, status, "tint")
+        tint = "transparent" if status in palette.UNTINTED else st(theme, status, "tint")
         note = f'<span class="note">{NOTE[status]}</span>' if NOTE[status] else ""
         out.append(
             f'<tr style="background:{tint}">'
             f'<td>{entity}</td><td class="mono">{batch}</td><td>{account}</td>'
             f'<td class="num mono">{cur} {amount}</td>'
             f'<td class="status" style="color:{text}">'
-            f'<span class="dot" style="background:{mark}"></span>{LABEL[status]}{note}</td></tr>')
+            f'<span class="dot" style="background:{mark}"></span>{LABEL[status]}{note}</td></tr>'
+        )
     out.append("</tbody></table>")
     return "\n".join(out)
 
+
 def ramp(title, colors):
-    cells = "".join(f'<div class="sw"><i style="background:{h}"></i><b>{k}</b></div>' for k, h in colors)
+    cells = "".join(
+        f'<div class="sw"><i style="background:{h}"></i><b>{k}</b></div>' for k, h in colors
+    )
     return f'<div class="ramp"><h4>{title}</h4><div class="row">{cells}</div></div>'
+
 
 def panel(theme, direction):
     v = theme_vars(theme, direction)
-    accents = [(k, acc(direction, k)) for k in ("400","500","600","700","800","900")]
+    accents = [(k, acc(direction, k)) for k in ("400", "500", "600", "700", "800", "900")]
     marks = [(LABEL[s], st(theme, s, "mark")) for s in STATUSES]
-    return f'''
-<section class="panel {theme}" style="--bg:{v['bg']};--card:{v['card']};--fg:{v['fg']};
-  --muted:{v['muted']};--hairline:{v['hairline']};--input:{v['input']};
-  --primary:{v['primary']};--primary-fg:{v['primary_fg']}">
+    return f"""
+<section class="panel {theme}" style="--bg:{v["bg"]};--card:{v["card"]};--fg:{v["fg"]};
+  --muted:{v["muted"]};--hairline:{v["hairline"]};--input:{v["input"]};
+  --primary:{v["primary"]};--primary-fg:{v["primary_fg"]}">
   <header>
     <h3>{direction.title()} accent, {theme}</h3>
     <div class="controls">
@@ -82,7 +141,8 @@ def panel(theme, direction):
   {table(theme, direction)}
   {ramp("Accent ramp", accents)}
   {ramp("Status marks at full chroma", marks)}
-</section>'''
+</section>"""
+
 
 CSS = """
 :root{color-scheme:light dark}
@@ -123,7 +183,7 @@ h2{font-size:14px;margin:28px 0 10px;color:#bbb;border-top:1px solid #333;paddin
 body = []
 body.append(f'<div class="grid">{panel("light", "verdigris")}{panel("dark", "verdigris")}</div>')
 
-grey = f'<div class="grid grey">{panel("light","verdigris")}{panel("dark","verdigris")}</div>'
+grey = f'<div class="grid grey">{panel("light", "verdigris")}{panel("dark", "verdigris")}</div>'
 
 html = f"""<!doctype html><meta charset="utf-8"><title>Per Contra accent decision</title>
 <style>{CSS}</style>

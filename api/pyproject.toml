@@ -56,8 +56,10 @@ select = ["E4", "E7", "E9", "F", "I", "N", "UP", "B", "RUF"]
 [tool.pyrefly]
 project-includes = ["percontra", "../scripts"]
 # verify_ui.py drives the built app through Playwright for Python, which is not an api
-# dependency; it is run by hand with uvx --with playwright.
-project-excludes = ["../scripts/verify_ui.py"]
+# dependency; it is run by hand with uvx --with playwright. The color scripts import a
+# sibling module through sys.path and shell out to a skill's calc.py, so neither the
+# import root nor the tool they measure with is resolvable from here.
+project-excludes = ["../scripts/verify_ui.py", "../scripts/color"]
 python-version = "3.14"
 
 # Warnings, not errors, while the pipeline passes untyped dicts around and openpyxl

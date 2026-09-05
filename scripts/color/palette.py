@@ -11,7 +11,7 @@ PAPER_HUE = 87.0
 # way down, fixing the achromatic 500/600/900/950 that broke the paper reading
 # exactly at the hairline rules and across all of dark mode.
 NEUTRAL = {
-    "50":  (0.962, 0.008),
+    "50": (0.962, 0.008),
     "100": (0.928, 0.010),
     "200": (0.864, 0.010),
     "300": (0.824, 0.010),
@@ -63,34 +63,38 @@ UNTINTED = {"ready"}
 
 # mark = small full-chroma dot, tint = whole row wash, text = label on the tint.
 LIGHT = {
-    "ready":          {"mark": (0.630, 0.009), "tint": (0.962, 0.008), "text": (0.455, 0.012)},
+    "ready": {"mark": (0.630, 0.009), "tint": (0.962, 0.008), "text": (0.455, 0.012)},
     "needs-decision": {"mark": (0.60, 0.118), "tint": (0.960, 0.018), "text": (0.43, 0.085)},
-    "blocked":        {"mark": (0.52, 0.170), "tint": (0.958, 0.016), "text": (0.44, 0.150)},
-    "stale":          {"mark": (0.58, 0.130), "tint": (0.958, 0.018), "text": (0.44, 0.100)},
-    "approved":       {"mark": (0.52, 0.085), "tint": (0.960, 0.012), "text": (0.40, 0.065)},
-    "exported":       {"mark": (0.58, 0.045), "tint": (0.958, 0.010), "text": (0.44, 0.045)},
+    "blocked": {"mark": (0.52, 0.170), "tint": (0.958, 0.016), "text": (0.44, 0.150)},
+    "stale": {"mark": (0.58, 0.130), "tint": (0.958, 0.018), "text": (0.44, 0.100)},
+    "approved": {"mark": (0.52, 0.085), "tint": (0.960, 0.012), "text": (0.40, 0.065)},
+    "exported": {"mark": (0.58, 0.045), "tint": (0.958, 0.010), "text": (0.44, 0.045)},
 }
 
 DARK = {
-    "ready":          {"mark": (0.630, 0.009), "tint": (0.218, 0.007), "text": (0.630, 0.009)},
+    "ready": {"mark": (0.630, 0.009), "tint": (0.218, 0.007), "text": (0.630, 0.009)},
     "needs-decision": {"mark": (0.78, 0.130), "tint": (0.283, 0.024), "text": (0.84, 0.090)},
-    "blocked":        {"mark": (0.68, 0.160), "tint": (0.283, 0.024), "text": (0.78, 0.110)},
-    "stale":          {"mark": (0.74, 0.130), "tint": (0.281, 0.024), "text": (0.82, 0.100)},
-    "approved":       {"mark": (0.72, 0.090), "tint": (0.283, 0.018), "text": (0.82, 0.070)},
-    "exported":       {"mark": (0.70, 0.050), "tint": (0.281, 0.012), "text": (0.80, 0.045)},
+    "blocked": {"mark": (0.68, 0.160), "tint": (0.283, 0.024), "text": (0.78, 0.110)},
+    "stale": {"mark": (0.74, 0.130), "tint": (0.281, 0.024), "text": (0.82, 0.100)},
+    "approved": {"mark": (0.72, 0.090), "tint": (0.283, 0.018), "text": (0.82, 0.070)},
+    "exported": {"mark": (0.70, 0.050), "tint": (0.281, 0.012), "text": (0.80, 0.045)},
 }
 
-def oklch(l, c, h):
-    return f"oklch({l:.3f} {c:.3f} {h:.3f})"
+
+def oklch(lightness, chroma, hue):
+    return f"oklch({lightness:.3f} {chroma:.3f} {hue:.3f})"
+
 
 def neutral(step):
-    l, c = NEUTRAL[step]
-    return oklch(l, c, PAPER_HUE)
+    lightness, chroma = NEUTRAL[step]
+    return oklch(lightness, chroma, PAPER_HUE)
+
 
 def status(theme, name, role):
-    l, c = (LIGHT if theme == "light" else DARK)[name][role]
-    return oklch(l, c, STATUS_HUE[name])
+    lightness, chroma = (LIGHT if theme == "light" else DARK)[name][role]
+    return oklch(lightness, chroma, STATUS_HUE[name])
+
 
 def accent(direction, step):
-    l, c, h = (ACCENT_VERDIGRIS if direction == "verdigris" else ACCENT_INK)[step]
-    return oklch(l, c, h)
+    lightness, chroma, hue = (ACCENT_VERDIGRIS if direction == "verdigris" else ACCENT_INK)[step]
+    return oklch(lightness, chroma, hue)
