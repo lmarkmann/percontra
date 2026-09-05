@@ -12,7 +12,6 @@ import userEvent from "@testing-library/user-event";
 import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/lib/auth-provider";
 import { character } from "@/lib/motion";
 import { createAppQueryClient } from "@/lib/query-client";
 import { routeTree } from "@/router";
@@ -21,7 +20,7 @@ interface ProvidersRenderResult extends RenderResult {
 	user: ReturnType<typeof userEvent.setup>;
 }
 
-// Mirrors main.tsx (ThemeProvider > QueryClientProvider > AuthProvider > LazyMotion > MotionConfig) minus ErrorBoundary and the router, so test failures surface as thrown errors rather than the fallback UI. Tests exercising real route config (loaders, beforeLoad) render their own RouterProvider wrapped in this instead of renderWithProviders - nesting two routers throws. AuthProvider is eager here (no VITE_WORKOS_CLIENT_ID in tests, so it is a passthrough). Router: unit tests mock Link/useNavigate in setup.ts so components can render without a full TanStack tree. router.test.tsx builds a real memory router.
+// Mirrors main.tsx (ThemeProvider > QueryClientProvider > LazyMotion > MotionConfig) minus ErrorBoundary and the router, so test failures surface as thrown errors rather than the fallback UI. Tests exercising real route config (loaders, beforeLoad) render their own RouterProvider wrapped in this instead of renderWithProviders - nesting two routers throws. Router: unit tests mock Link/useNavigate in setup.ts so components can render without a full TanStack tree. router.test.tsx builds a real memory router.
 export function AppProviders({
 	children,
 	queryClient,
@@ -33,13 +32,11 @@ export function AppProviders({
 	return (
 		<ThemeProvider>
 			<QueryClientProvider client={client}>
-				<AuthProvider>
-					<LazyMotion features={domAnimation} strict>
-						<MotionConfig reducedMotion="user" transition={character.standard}>
-							{children}
-						</MotionConfig>
-					</LazyMotion>
-				</AuthProvider>
+				<LazyMotion features={domAnimation} strict>
+					<MotionConfig reducedMotion="user" transition={character.standard}>
+						{children}
+					</MotionConfig>
+				</LazyMotion>
 			</QueryClientProvider>
 		</ThemeProvider>
 	);

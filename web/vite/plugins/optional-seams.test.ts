@@ -8,7 +8,7 @@ type SeamPlugin = {
 	load: (id: string) => string | null;
 };
 
-// posthog-js, @workos-inc/authkit-react, and @sentry/react are optional and unshipped by default, so isInstalled() is false and the plugin virtualizes them.
+// posthog-js and @sentry/react are optional and unshipped by default, so isInstalled() is false and the plugin virtualizes them.
 const plugin = optionalSeamsPlugin() as unknown as SeamPlugin;
 
 // No .env files live next to the plugin sources; loadEnv then only sees process.env, which vi.stubEnv controls.
@@ -27,9 +27,6 @@ afterEach(() => {
 describe("optionalSeamsPlugin", () => {
 	it("virtualizes an uninstalled optional SDK import", () => {
 		expect(plugin.resolveId("posthog-js")).toBe("\0optional-seam:posthog-js");
-		expect(plugin.resolveId("@workos-inc/authkit-react")).toBe(
-			"\0optional-seam:@workos-inc/authkit-react",
-		);
 		expect(plugin.resolveId("@sentry/react")).toBe(
 			"\0optional-seam:@sentry/react",
 		);
@@ -53,9 +50,6 @@ describe("optionalSeamsPlugin", () => {
 	it("still stubs when the seam env var is unset", () => {
 		const fresh = configuredPlugin();
 		expect(fresh.resolveId("posthog-js")).toBe("\0optional-seam:posthog-js");
-		expect(fresh.resolveId("@workos-inc/authkit-react")).toBe(
-			"\0optional-seam:@workos-inc/authkit-react",
-		);
 		expect(fresh.resolveId("@sentry/react")).toBe(
 			"\0optional-seam:@sentry/react",
 		);
@@ -65,14 +59,6 @@ describe("optionalSeamsPlugin", () => {
 		vi.stubEnv("VITE_POSTHOG_KEY", "phc_test");
 		const fresh = configuredPlugin();
 		expect(() => fresh.resolveId("posthog-js")).toThrow(/pnpm add posthog-js/);
-	});
-
-	it("fails loud when VITE_WORKOS_CLIENT_ID is set without authkit", () => {
-		vi.stubEnv("VITE_WORKOS_CLIENT_ID", "client_test");
-		const fresh = configuredPlugin();
-		expect(() => fresh.resolveId("@workos-inc/authkit-react")).toThrow(
-			/pnpm add @workos-inc\/authkit-react/,
-		);
 	});
 
 	it("fails loud when VITE_SENTRY_DSN is set without @sentry/react", () => {

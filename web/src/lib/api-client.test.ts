@@ -19,7 +19,6 @@ vi.mock("@/lib/error-reporting", () => ({
 }));
 
 import { problemResponse } from "@/contract/problem";
-import { registerAccessTokenGetter } from "@/lib/api-auth";
 import { apiGet, apiPost, apiRequest } from "@/lib/api-client";
 import { ApiProblem } from "@/lib/api-problem";
 import { reportError } from "@/lib/error-reporting";
@@ -31,7 +30,6 @@ beforeEach(() => {
 
 afterEach(() => {
 	envState.VITE_API_BASE_URL = undefined;
-	registerAccessTokenGetter(null);
 });
 
 /** Route GET {path} to a 200 JSON body and hand back the requests MSW saw. */
@@ -46,42 +44,11 @@ function captureGet(path: string, body: Record<string, unknown>): Request[] {
 	return requests;
 }
 
-test("apiRequest attaches a registered bearer token", async () => {
-	const requests = captureGet("/api/ok", { ok: true });
-	registerAccessTokenGetter(async () => "token-123");
-	await apiRequest("/api/ok");
-	expect(requests[0]?.headers.get("Authorization")).toBe("Bearer token-123");
-});
-
-test("apiRequest keeps a caller-provided Authorization header", async () => {
-	const requests = captureGet("/api/ok", { ok: true });
-	registerAccessTokenGetter(async () => "token-123");
-	await apiRequest("/api/ok", {
-		headers: { Authorization: "Bearer caller-token" },
-	});
-	expect(requests[0]?.headers.get("Authorization")).toBe("Bearer caller-token");
-});
-
-test("apiRequest sends no Authorization when nothing is registered", async () => {
-	const requests = captureGet("/api/ok", { ok: true });
-	await apiRequest("/api/ok");
-	expect(requests[0]?.headers.get("Authorization")).toBeNull();
-});
-
-test("apiRequest sends no Authorization when the token getter throws", async () => {
-	const requests = captureGet("/api/ok", { ok: true });
-	registerAccessTokenGetter(async () => {
-		throw new Error("refresh failed");
-	});
-	await apiRequest("/api/ok");
-	expect(requests[0]?.headers.get("Authorization")).toBeNull();
-});
-
-test("apiRequest throws when VITE_API_BASE_URL is unset", async () => {
+test("apiRequest falls back to same-origin when VITE_API_BASE_URL is unset", async () => {
 	envState.VITE_API_BASE_URL = undefined;
-	await expect(apiRequest("/api/health")).rejects.toThrow(
-		/VITE_API_BASE_URL is not set/,
-	);
+	const requests = captureGet("/api/health", { ok: true });
+	await apiRequest("/api/health");
+	expect(new URL(requests[0]?.url ?? "").pathname).toBe("/api/health");
 });
 
 test("apiGet joins base URL, includes credentials, and parses schema", async () => {

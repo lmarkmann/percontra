@@ -3,9 +3,6 @@
 
 # frontend proof media: the spec commits and gets reviewed, the frames and
 # traces it cites do not (one dialog trace is ~50 MB)
-docs/frontend/proof/
-!.claude/
-.claude/worktrees
 # Logs
 logs
 *.log

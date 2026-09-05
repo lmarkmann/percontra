@@ -15,10 +15,8 @@ test("route intent preloads always revalidate loader data", () => {
 	expect(createAppRouter().options.defaultPreloadStaleTime).toBe(0);
 });
 
-test("beforeLoad redirects an unauthenticated visitor from /dashboard to /login", async () => {
-	const history = createMemoryHistory({
-		initialEntries: ["/dashboard?view=empty"],
-	});
+test("an unknown path renders the not-found surface", async () => {
+	const history = createMemoryHistory({ initialEntries: ["/no-such-page"] });
 	const queryClient = createAppQueryClient();
 	const memoryRouter = createRouter({
 		routeTree,
@@ -33,10 +31,7 @@ test("beforeLoad redirects an unauthenticated visitor from /dashboard to /login"
 	});
 	await waitFor(() =>
 		expect(
-			screen.getByRole("heading", { name: /log in/i }),
+			screen.getByRole("heading", { name: /page not found/i }),
 		).toBeInTheDocument(),
 	);
-	expect(memoryRouter.state.location.search).toEqual({
-		redirect: "/dashboard?view=empty",
-	});
 });

@@ -11,10 +11,6 @@
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
 import { Route as SplatRouteImport } from "./routes/$"
-import { Route as AuthenticatedRouteRouteImport } from "./routes/_authenticated/route"
-import { Route as LoginRouteImport } from "./routes/login"
-import { Route as ShowcaseRouteImport } from "./routes/showcase"
-import { Route as AuthenticatedDashboardRouteImport } from "./routes/_authenticated/dashboard"
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -26,70 +22,31 @@ const SplatRoute = SplatRouteImport.update({
   path: "/$",
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: "/_authenticated",
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: "/login",
-  path: "/login",
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShowcaseRoute = ShowcaseRouteImport.update({
-  id: "/showcase",
-  path: "/showcase",
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
-  "/login": typeof LoginRoute
-  "/showcase": typeof ShowcaseRoute
-  "/dashboard": typeof AuthenticatedDashboardRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
-  "/login": typeof LoginRoute
-  "/showcase": typeof ShowcaseRoute
-  "/dashboard": typeof AuthenticatedDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
-  "/_authenticated": typeof AuthenticatedRouteRouteWithChildren
   "/$": typeof SplatRoute
-  "/login": typeof LoginRoute
-  "/showcase": typeof ShowcaseRoute
-  "/_authenticated/dashboard": typeof AuthenticatedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/$" | "/login" | "/showcase" | "/dashboard"
+  fullPaths: "/" | "/$"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/$" | "/login" | "/showcase" | "/dashboard"
-  id:
-    | "__root__"
-    | "/"
-    | "/_authenticated"
-    | "/$"
-    | "/login"
-    | "/showcase"
-    | "/_authenticated/dashboard"
+  to: "/" | "/$"
+  id: "__root__" | "/" | "/$"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
-  LoginRoute: typeof LoginRoute
-  ShowcaseRoute: typeof ShowcaseRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -108,54 +65,12 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    "/_authenticated": {
-      id: "/_authenticated"
-      path: ""
-      fullPath: "/"
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    "/login": {
-      id: "/login"
-      path: "/login"
-      fullPath: "/login"
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    "/showcase": {
-      id: "/showcase"
-      path: "/showcase"
-      fullPath: "/showcase"
-      preLoaderRoute: typeof ShowcaseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    "/_authenticated/dashboard": {
-      id: "/_authenticated/dashboard"
-      path: "/dashboard"
-      fullPath: "/dashboard"
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-}
-
-const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-}
-
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   SplatRoute: SplatRoute,
-  LoginRoute: LoginRoute,
-  ShowcaseRoute: ShowcaseRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

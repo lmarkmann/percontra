@@ -15,7 +15,7 @@ describe("filterModulepreloadPlugin", () => {
 	it("keeps entry modulepreload and drops lazy-route preloads", () => {
 		const html = [
 			'<link rel="modulepreload" crossorigin href="/assets/main-abc123.js">',
-			'<link rel="modulepreload" crossorigin href="/assets/showcase-def456.js">',
+			'<link rel="modulepreload" crossorigin href="/assets/review-def456.js">',
 			'<link rel="modulepreload" crossorigin href="/assets/loader-circle-ghi789.js">',
 		].join("\n");
 

@@ -14,18 +14,19 @@ import { filterModulepreloadPlugin } from "./vite/plugins/filter-modulepreload";
 import { optionalSeamsPlugin } from "./vite/plugins/optional-seams";
 import { preloadFontsPlugin } from "./vite/plugins/preload-fonts";
 
-// Cloudflare plugin: workerd parity for dev/preview/build; off under Vitest or it boots workerd
-// beneath the happy-dom unit suite. Rationale and output layout: docs/reference/architecture.md, "Vitest guard".
+// Build-output plugins are off under Vitest: they write dist artifacts the
+// happy-dom unit suite neither needs nor can serve.
 const underVitest = Boolean(process.env.VITEST);
+
+// The API and the built SPA are served same-origin by Django in production
+// (WhiteNoise over web/dist/client). The proxy reproduces that in dev so
+// relative /api paths work identically in both.
+const apiOrigin = process.env.PERCONTRA_API_ORIGIN ?? "http://127.0.0.1:8080";
 // Bundle analysis is opt-in (ANALYZE=1 pnpm build): gating it keeps visualizer out of CI's build step and stops dist/stats.html from shipping as a deployed asset. Nothing runs it on the normal build or deploy path.
 const analyze = Boolean(process.env.ANALYZE);
 
 // https://vite.dev/config/
-export default defineConfig(async () => {
-	const cloudflarePlugin = underVitest
-		? null
-		: (await import("@cloudflare/vite-plugin")).cloudflare;
-
+export default defineConfig(() => {
 	return {
 		plugins: [
 			optionalSeamsPlugin(),
@@ -39,7 +40,6 @@ export default defineConfig(async () => {
 			!underVitest && emitServiceWorkerPlugin(),
 			!underVitest && emitSitemapPlugin(),
 			!underVitest && criticalCssPlugin(),
-			cloudflarePlugin?.(),
 			analyze &&
 				visualizer({
 					open: true,
@@ -47,20 +47,19 @@ export default defineConfig(async () => {
 					filename: "dist/stats.html",
 				}),
 		],
-		// Scoped to the client environment: the Cloudflare plugin's Worker
-		// environment brings its own entry (server/index.ts) and must not inherit
-		// the HTML + critical CSS inputs.
-		environments: {
-			client: {
-				build: {
-					rollupOptions: {
-						input: {
-							main: path.resolve(__dirname, "index.html"),
-							critical: path.resolve(__dirname, "src/critical.css"),
-						},
-					},
+		build: {
+			outDir: "dist/client",
+			rollupOptions: {
+				input: {
+					main: path.resolve(__dirname, "index.html"),
+					// Second entry so the critical above-fold bundle is emitted
+					// fingerprinted for critical-css to inline.
+					critical: path.resolve(__dirname, "src/critical.css"),
 				},
 			},
+		},
+		server: {
+			proxy: { "/api": { target: apiOrigin, changeOrigin: true } },
 		},
 		resolve: {
 			alias: {
@@ -81,12 +80,11 @@ export default defineConfig(async () => {
 			setupFiles: ["./src/test/setup.ts"],
 			coverage: {
 				provider: "v8" as const,
-				include: ["src/lib/**", "src/hooks/**", "server/**", "vite/plugins/**"],
+				include: ["src/lib/**", "src/hooks/**", "vite/plugins/**"],
 				// Optional seams / knip-ignored dead code: out of the gate until they ship.
 				exclude: ["src/lib/auth-provider.tsx"],
 				thresholds: {
 					"src/lib/**": { lines: 80, functions: 80 },
-					"server/**": { lines: 97, statements: 97, functions: 99 },
 					"vite/plugins/**": {
 						lines: 59,
 						statements: 60,

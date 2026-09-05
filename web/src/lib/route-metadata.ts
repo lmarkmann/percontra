@@ -2,15 +2,14 @@ export type RobotsDirective = "index,follow" | "noindex,nofollow";
 
 export const routeMetadata = {
 	home: { path: "/", robots: "index,follow" },
-	showcase: { path: "/showcase", robots: "noindex,nofollow" },
-	login: { path: "/login", robots: "noindex,nofollow" },
-	dashboard: { path: "/dashboard", robots: "noindex,nofollow" },
+	review: { path: "/review", robots: "noindex,nofollow" },
+	release: { path: "/release", robots: "noindex,nofollow" },
 	notFound: { path: "/", robots: "noindex,nofollow" },
 } as const satisfies Record<string, { path: string; robots: RobotsDirective }>;
 
 export type RouteMetadataKey = keyof typeof routeMetadata;
 
-const routedKeys = ["showcase", "login", "dashboard"] as const;
+const routedKeys = ["review", "release"] as const;
 
 export function matchRouteMetadata(pathname: string): RouteMetadataKey {
 	if (pathname === "" || pathname === "/") return "home";

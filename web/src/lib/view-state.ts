@@ -7,6 +7,7 @@
  */
 
 /** Full inventory lattice including shell and write concerns. */
+/** @public - state vocabulary the review and release surfaces tag against. */
 export type ViewState =
 	| "idle"
 	| "loading"
@@ -26,6 +27,7 @@ export type ResourceResult<TData, TPartial = TData> =
 	| { status: "error"; supportId: string; message: string };
 
 /** Mutation / transport phase for write surfaces. */
+/** @public - write phase for decision approval and export. */
 export type MutationPhase<TRetry = undefined> =
 	| { type: "idle" }
 	| { type: "submitting" }

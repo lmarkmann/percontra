@@ -6,9 +6,8 @@
 	"scripts": {
 		"dev": "vite",
 		"routes:gen": "tsr generate",
-		"cf-typegen": "wrangler types --strict-vars=false",
-		"build": "pnpm cf-typegen && pnpm routes:gen && tsc -b tsconfig.json server/tsconfig.json && vite build",
-		"typecheck": "pnpm cf-typegen && pnpm routes:gen && tsc -b tsconfig.json server/tsconfig.json --noEmit",
+		"build": "pnpm routes:gen && tsc -b tsconfig.json && vite build",
+		"typecheck": "pnpm routes:gen && tsc -b tsconfig.json --noEmit",
 		"check": "oxfmt --write . && oxlint --fix",
 		"lint": "oxfmt --check . && oxlint",
 		"lint:github": "oxlint --format=github",
@@ -22,8 +21,7 @@
 		"size": "size-limit",
 		"perf:ci": "lhci autorun",
 		"ci:local": "pnpm typecheck && pnpm lint && pnpm knip && pnpm audit --prod --audit-level high && pnpm test:run && pnpm build && pnpm size && pnpm test:e2e",
-		"preview": "vite preview",
-		"deploy:cf": "pnpm build && wrangler deploy"
+		"preview": "vite preview"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.7.0",
@@ -33,8 +31,6 @@
 		"@tanstack/react-router": "^1.170.32",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"hono": "^4.13.5",
-		"jose": "^6.2.10",
 		"lucide-react": "^1.39.0",
 		"motion": "^13.2.0",
 		"react": "^19.2.8",
@@ -46,7 +42,6 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^3.0.1",
-		"@cloudflare/vite-plugin": "^1.54.3",
 		"@lhci/cli": "0.15.1",
 		"@playwright/test": "^1.62.1",
 		"@size-limit/file": "^13.0.3",
@@ -61,7 +56,6 @@
 		"@types/react-dom": "^19.2.5",
 		"@vitejs/plugin-react": "^6.1.1",
 		"@vitest/coverage-v8": "4.1.11",
-		"fake-indexeddb": "^6.2.5",
 		"happy-dom": "^20.13.2",
 		"knip": "^6.34.0",
 		"msw": "^2.15.0",
@@ -74,8 +68,7 @@
 		"tailwindcss": "^4.3.3",
 		"typescript": "~7.0.2",
 		"vite": "^8.2.2",
-		"vitest": "4.1.11",
-		"wrangler": "^4.128.0"
+		"vitest": "4.1.11"
 	},
 	"size-limit": [
 		{
@@ -85,13 +78,10 @@
 				"!dist/client/assets/MotionConfig-*.js",
 				"!dist/client/assets/_-*.js",
 				"!dist/client/assets/_optional-seam_*.js",
-				"!dist/client/assets/showcase-*.js",
-				"!dist/client/assets/showcase-section-*.js",
-				"!dist/client/assets/login-*.js",
-				"!dist/client/assets/dashboard-*.js",
 				"!dist/client/assets/not-found-*.js",
-				"!dist/client/assets/motion-shell-*.js",
 				"!dist/client/assets/motion-*.js",
+				"!dist/client/assets/review-*.js",
+				"!dist/client/assets/release-*.js",
 				"!dist/client/assets/loader-circle-*.js",
 				"!dist/client/assets/copy-button-*.js",
 				"!dist/client/assets/dist-*.js",
@@ -102,29 +92,16 @@
 				"!dist/client/assets/shadowDom-*.js",
 				"!dist/client/assets/skeleton-*.js",
 				"!dist/client/assets/theme-toggle-lean-*.js",
-				"!dist/client/assets/workos-login-button-*.js",
 				"!dist/client/assets/posthog*.js",
-				"!dist/client/assets/auth-*.js",
-				"!dist/client/assets/authkit-*.js",
 				"!dist/client/assets/sonner-*.js",
 				"!dist/client/assets/toaster-*.js"
 			],
-			"limit": "200 kB"
-		},
-		{
-			"name": "js (showcase)",
-			"path": "dist/client/assets/showcase-*.js",
-			"limit": "80 kB"
-		},
-		{
-			"name": "js (motion)",
-			"path": "dist/client/assets/motion-shell-*.js",
-			"limit": "32 kB"
+			"limit": "115 kB"
 		},
 		{
 			"name": "css",
 			"path": "dist/client/assets/*.css",
-			"limit": "64 kB"
+			"limit": "16 kB"
 		}
 	],
 	"engines": {
@@ -144,7 +121,6 @@
 		"ignoreDependencies": [
 			"posthog-js",
 			"@sentry/react",
-			"@workos-inc/authkit-react",
 			"@fontsource-variable/inter",
 			"@changesets/cli"
 		]

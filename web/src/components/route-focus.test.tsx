@@ -8,8 +8,8 @@ test("moves focus to #main after a client navigation, not on first paint", async
 	await screen.findByRole("heading", { level: 1 });
 	expect(document.getElementById("main")).not.toHaveFocus();
 
-	await router.navigate({ to: "/login" });
-	await screen.findByRole("heading", { name: /log in/i });
+	await router.navigate({ href: "/no-such-page" });
+	await screen.findByRole("heading", { name: /page not found/i });
 
 	await waitFor(() => {
 		expect(document.getElementById("main")).toHaveFocus();

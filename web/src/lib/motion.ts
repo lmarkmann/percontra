@@ -8,7 +8,7 @@
  * Swap `character.*` via MotionConfig on a layout when a product zone needs a
  * different register (productive shell, calm money, expressive marketing).
  */
-import type { Transition, Variants } from "motion/react";
+import type { Transition } from "motion/react";
 
 // --- Tokens (seconds; mirrors --motion-* / --ease-* in theme-tokens.css) ---
 
@@ -169,41 +169,3 @@ export const collapsePresence = {
 	exit: { gridTemplateRows: "0fr", opacity: 0 },
 	transition: { duration: MOTION_DURATION.base, ease: MOTION_EASE.out },
 } as const;
-
-// --- Scroll reveal (marketing / showcase only; once per section) ---
-
-export type ScrollRevealDirection = "up" | "down" | "none";
-
-/** Default viewport for scroll reveals: once, slightly before fully in view. */
-export const scrollRevealViewport = {
-	once: true,
-	margin: "-10% 0px",
-} as const;
-
-/** Item variant for staggered scroll reveals. GPU-only: opacity + translateY. */
-export function scrollRevealItem(
-	distance = 8,
-	direction: ScrollRevealDirection = "up",
-): Variants {
-	const offset =
-		direction === "none" ? 0 : direction === "up" ? distance : -distance;
-
-	return {
-		hidden: direction === "none" ? { opacity: 0 } : { opacity: 0, y: offset },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: { duration: MOTION_DURATION.base, ease: MOTION_EASE.out },
-		},
-	};
-}
-
-/** Container variant; list siblings 30-80ms (default 50), hero groups ~100ms. */
-export function scrollRevealContainer(stagger = 0.05): Variants {
-	return {
-		hidden: {},
-		visible: {
-			transition: { staggerChildren: stagger, delayChildren: 0 },
-		},
-	};
-}

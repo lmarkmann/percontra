@@ -6,10 +6,10 @@
 import { env } from "@/env";
 
 export const site = {
-	name: "vite-template",
-	tagline: "Start design-forward. Stay lean.",
+	name: "Per Contra",
+	tagline: "Every posting shows its work.",
 	description:
-		"Vite template with React, Tailwind v4, shadcn Base UI, and a design-system showcase.",
+		"A sign-off workbench for fund migrations: every posting carries its source rows, the decisions it depends on, and whether it may leave.",
 	defaultOgImage: "/og-image.svg",
 	/** Public logo path for Organization JSON-LD when origin is set. */
 	logoPath: "/favicon.svg",

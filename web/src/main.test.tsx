@@ -2,30 +2,26 @@ import { beforeEach, expect, test, vi } from "vitest";
 
 const renderMock = vi.hoisted(() => vi.fn());
 const createRootMock = vi.hoisted(() => vi.fn(() => ({ render: renderMock })));
-const ensureAuthProviderReadyMock = vi.hoisted(() => vi.fn());
+const registerServiceWorkerMock = vi.hoisted(() => vi.fn());
 
 vi.mock("react-dom/client", () => ({ createRoot: createRootMock }));
-vi.mock("@/lib/auth-provider", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@/lib/auth-provider")>();
-	return {
-		...actual,
-		ensureAuthProviderReady: ensureAuthProviderReadyMock,
-	};
-});
 vi.mock("./router.tsx", () => ({ router: {} }));
+vi.mock("@/lib/register-service-worker", () => ({
+	registerServiceWorker: registerServiceWorkerMock,
+}));
 
 beforeEach(() => {
 	vi.resetModules();
 	renderMock.mockClear();
 	createRootMock.mockClear();
-	ensureAuthProviderReadyMock.mockReset();
+	registerServiceWorkerMock.mockClear();
 	document.body.replaceChildren();
 });
 
-test("mounts the app after AuthKit is ready", async () => {
-	ensureAuthProviderReadyMock.mockResolvedValue(undefined);
+test("mounts the app into the static shell root", async () => {
 	const root = document.createElement("div");
 	root.id = "root";
+	root.textContent = "Static home shell";
 	document.body.append(root);
 
 	await import("./main");
@@ -34,29 +30,16 @@ test("mounts the app after AuthKit is ready", async () => {
 	});
 
 	expect(createRootMock).toHaveBeenCalledWith(root);
-	expect(ensureAuthProviderReadyMock).toHaveBeenCalledOnce();
 	root.remove();
 });
 
-test("keeps the static shell when AuthKit bootstrap rejects", async () => {
-	const bootstrapError = new Error("AuthKit chunk failed");
-	ensureAuthProviderReadyMock.mockRejectedValue(bootstrapError);
-	const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+test("registers the service worker at module load", async () => {
 	const root = document.createElement("div");
 	root.id = "root";
-	root.textContent = "Static home shell";
 	document.body.append(root);
 
 	await import("./main");
-	await vi.waitFor(() => {
-		expect(errorSpy).toHaveBeenCalledWith(
-			"AuthKit bootstrap failed, keeping the static shell",
-			bootstrapError,
-		);
-	});
 
-	expect(createRootMock).not.toHaveBeenCalled();
-	expect(renderMock).not.toHaveBeenCalled();
-	expect(root).toHaveTextContent("Static home shell");
+	expect(registerServiceWorkerMock).toHaveBeenCalledOnce();
 	root.remove();
 });

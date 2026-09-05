@@ -9,7 +9,6 @@ import {
 	MOTION_DURATION,
 	MOTION_EASE,
 	panelPresence,
-	scrollRevealContainer,
 	spring,
 	tween,
 	viewPresence,
@@ -77,9 +76,3 @@ test("in-slot presets: crossfade is opacity-only; settle uses 4px Y", () => {
 	expect(exit).toBeCloseTo(cellSettle.transition.duration * 0.75, 5);
 });
 
-test("list stagger stays in the 30-80ms band", () => {
-	const variants = scrollRevealContainer(0.05);
-	expect(variants.visible).toMatchObject({
-		transition: { staggerChildren: 0.05 },
-	});
-});

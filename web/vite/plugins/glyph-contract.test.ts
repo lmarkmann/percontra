@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
 /**
@@ -35,7 +35,7 @@ const ALLOWED = new Set([
 function trackedFiles(): string[] {
 	const output = execFileSync(
 		"git",
-		["ls-files", "src", "server", "e2e", "public", "index.html"],
+		["ls-files", "src", "e2e", "public", "index.html"],
 		{ encoding: "utf8" },
 	);
 	return output.split("\n").filter(Boolean);
@@ -47,6 +47,9 @@ test("the shipped surface carries no AI-tell punctuation", () => {
 	for (const file of trackedFiles()) {
 		if (ALLOWED.has(file)) continue;
 		if (/\.(woff2|png|jpg|svg|ico)$/.test(file)) continue;
+		// Tracked but deleted in the working tree: git still lists it, and there
+		// is nothing on disk to scan until the deletion is staged.
+		if (!existsSync(file)) continue;
 
 		const lines = readFileSync(file, "utf8").split("\n");
 		for (const [index, line] of lines.entries()) {

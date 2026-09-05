@@ -34,23 +34,18 @@ export const routeSeo = {
 		description: site.description,
 		ogImage: site.defaultOgImage,
 	},
-	showcase: {
-		...routeMetadata.showcase,
-		title: `${site.name} | Design system`,
+	review: {
+		...routeMetadata.review,
+		title: `${site.name} | Review queue`,
 		description:
-			"In-app design-system showcase for the vite-template stack. Demo surface; not a product page.",
+			"Mapping decisions awaiting a reviewer, grouped by accounting question.",
 		ogImage: site.defaultOgImage,
 	},
-	login: {
-		...routeMetadata.login,
-		title: `${site.name} | Log in`,
-		description: "Sign in to reach protected workspace routes.",
-		ogImage: site.defaultOgImage,
-	},
-	dashboard: {
-		...routeMetadata.dashboard,
-		title: `${site.name} | Workspace`,
-		description: "Signed-in workspace for projects and activity.",
+	release: {
+		...routeMetadata.release,
+		title: `${site.name} | Release check`,
+		description:
+			"What changed since approval, and which approvals a changed decision made stale.",
 		ogImage: site.defaultOgImage,
 	},
 	notFound: {

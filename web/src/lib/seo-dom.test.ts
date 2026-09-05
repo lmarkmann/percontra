@@ -45,9 +45,9 @@ test("applySeoHead drops prior route SEO links and JSON-LD on noindex routes", (
 			includeJsonLd: true,
 		}),
 	);
-	// Login is noindex: no canonical, no JSON-LD.
+	// The review queue is noindex: no canonical, no JSON-LD.
 	applySeoHead(
-		seoHead(routeSeo.login, {
+		seoHead(routeSeo.review, {
 			origin: "https://example.com",
 		}),
 	);
@@ -60,5 +60,5 @@ test("applySeoHead drops prior route SEO links and JSON-LD on noindex routes", (
 			'script[type="application/ld+json"][data-seo="route"]',
 		),
 	).toBeNull();
-	expect(document.title).toBe(routeSeo.login.title);
+	expect(document.title).toBe(routeSeo.review.title);
 });

@@ -4,7 +4,7 @@ import { RefreshCw } from "lucide-react";
 
 import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
-import { Marker, MarkerContent } from "@/components/ui/chat/marker";
+import { Marker, MarkerContent } from "@/components/ui/marker";
 import { StatusPill } from "@/components/ui/status-pill";
 import { actionClass } from "@/lib/action-class";
 import { cn } from "@/lib/utils";

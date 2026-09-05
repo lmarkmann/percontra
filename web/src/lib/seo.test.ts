@@ -1,4 +1,8 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
+
+// Pin the env surface: these assertions describe behaviour with no public
+// origin configured, and a developer's .env must not decide whether they pass.
+vi.mock("@/env", () => ({ env: {} }));
 
 import {
 	absoluteUrl,
@@ -24,20 +28,19 @@ test("absoluteUrl joins origin and path", () => {
 	expect(absoluteUrl("/login", undefined)).toBeUndefined();
 });
 
-test("home is indexable; demos and auth are noindex", () => {
+test("home is indexable; the work surfaces are noindex", () => {
 	expect(routeSeo.home.robots).toBe("index,follow");
-	expect(routeSeo.showcase.robots).toBe("noindex,nofollow");
-	expect(routeSeo.login.robots).toBe("noindex,nofollow");
-	expect(routeSeo.dashboard.robots).toBe("noindex,nofollow");
+	expect(routeSeo.review.robots).toBe("noindex,nofollow");
+	expect(routeSeo.release.robots).toBe("noindex,nofollow");
 	expect(routeSeo.notFound.robots).toBe("noindex,nofollow");
 	expect(indexableSeoRoutes().map((r) => r.path)).toEqual(["/"]);
 });
 
 test("route SEO matching respects path segment boundaries", () => {
-	expect(matchRouteSeo("/login")).toBe(routeSeo.login);
-	expect(matchRouteSeo("/login/help")).toBe(routeSeo.login);
-	expect(matchRouteSeo("/login-help")).toBe(routeSeo.notFound);
-	expect(matchRouteSeo("/dashboards")).toBe(routeSeo.notFound);
+	expect(matchRouteSeo("/review")).toBe(routeSeo.review);
+	expect(matchRouteSeo("/review/gap-12")).toBe(routeSeo.review);
+	expect(matchRouteSeo("/review-queue")).toBe(routeSeo.notFound);
+	expect(matchRouteSeo("/releases")).toBe(routeSeo.notFound);
 });
 
 test("seoHead includes title, description, robots, and social tags", () => {
@@ -72,7 +75,7 @@ test("seoHead adds canonical and og:url only with origin", () => {
 });
 
 test("noindex routes skip canonical", () => {
-	const head = seoHead(routeSeo.login, { origin: "https://example.com" });
+	const head = seoHead(routeSeo.review, { origin: "https://example.com" });
 	expect(head.links).toBeUndefined();
 });
 

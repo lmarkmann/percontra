@@ -20,6 +20,4 @@ Allow: /
 # Disallow: /login
 # Disallow: /dashboard
 
-# When VITE_APP_URL is set at build, emit-sitemap writes dist/sitemap.xml.
-# Point crawlers at it after deploy, e.g.:
-# Sitemap: https://example.com/sitemap.xml
+Sitemap: https://percontra.dev/sitemap.xml

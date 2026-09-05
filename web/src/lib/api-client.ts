@@ -1,14 +1,12 @@
 import { env } from "@/env";
-import { getRegisteredAccessToken } from "@/lib/api-auth";
 import { parseApiProblem } from "@/lib/api-problem";
 import { reportError } from "@/lib/error-reporting";
 
+// Empty base means same-origin, which is the deployed shape: Django serves both
+// /api and the built SPA from one process. VITE_API_BASE_URL only overrides that
+// for a split deployment.
 function apiBaseUrl(): string {
-	const base = env.VITE_API_BASE_URL?.replace(/\/$/, "");
-	if (!base) {
-		throw new Error("VITE_API_BASE_URL is not set");
-	}
-	return base;
+	return env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 }
 
 function resolveUrl(path: string): string {
@@ -40,12 +38,6 @@ export async function apiRequest(
 			requestHeaders.set("Content-Type", "application/json");
 		}
 		payload = JSON.stringify(body);
-	}
-	if (!requestHeaders.has("Authorization")) {
-		const accessToken = await getRegisteredAccessToken();
-		if (accessToken) {
-			requestHeaders.set("Authorization", `Bearer ${accessToken}`);
-		}
 	}
 	const response = await fetch(resolveUrl(path), {
 		...rest,

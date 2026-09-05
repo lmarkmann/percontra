@@ -15,58 +15,12 @@ export function captureException() {}
   identify() {},
   reset() {},
 };`,
-	"@workos-inc/authkit-react": `import { Fragment } from "react";
-export function AuthKitProvider({ children }) {
-  return children ?? null;
-}
-export function useAuth() {
-  return {
-    isLoading: false,
-    user: null,
-    organizationId: null,
-    role: null,
-    roles: null,
-    permissions: [],
-    featureFlags: [],
-    impersonator: null,
-    authenticationMethod: null,
-    signIn: async () => {
-      throw new Error(
-        "Install @workos-inc/authkit-react (pnpm add @workos-inc/authkit-react) before enabling WorkOS.",
-      );
-    },
-    signUp: async () => {
-      throw new Error(
-        "Install @workos-inc/authkit-react before enabling WorkOS.",
-      );
-    },
-    signOut: () => {},
-    getAccessToken: async () => {
-      throw new Error(
-        "Install @workos-inc/authkit-react before enabling WorkOS.",
-      );
-    },
-    getUser: () => null,
-    switchToOrganization: async () => {
-      throw new Error(
-        "Install @workos-inc/authkit-react before enabling WorkOS.",
-      );
-    },
-    getSignInUrl: async () => "",
-    getSignUpUrl: async () => "",
-  };
-}
-export function getClaims() {
-  return {};
-}
-`,
 } as const;
 
 // One row per seam: the env var that arms it. Env set + package missing is a misconfiguration (silent stubs would ship no-op analytics or a fake AuthKit), so the build fails loudly instead of stubbing. Env unset keeps the silent stub.
 const SEAM_ENV_VARS: Record<keyof typeof OPTIONAL_SEAMS, string> = {
 	"@sentry/react": "VITE_SENTRY_DSN",
 	"posthog-js": "VITE_POSTHOG_KEY",
-	"@workos-inc/authkit-react": "VITE_WORKOS_CLIENT_ID",
 };
 
 function isSeamPackage(source: string): source is keyof typeof OPTIONAL_SEAMS {

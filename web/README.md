@@ -25,28 +25,28 @@ pnpm dev
 
 ## Scripts
 
-| command               | does                                                                   |
-| --------------------- | ---------------------------------------------------------------------- |
-| `pnpm dev`            | dev server (runs inside workerd, so the Worker and headers behave)     |
-| `pnpm build`          | cf-typegen + routes:gen + typecheck + production build                 |
-| `pnpm preview`        | preview the production build                                           |
-| `pnpm check`          | oxfmt write + oxlint --fix                                             |
-| `pnpm lint`           | oxfmt check + oxlint (read-only)                                       |
-| `pnpm format`         | oxfmt write                                                            |
-| `pnpm typecheck`      | cf-typegen + routes:gen + `tsc -b` over both projects, no emit         |
-| `pnpm cf-typegen`     | Worker env types from `wrangler.jsonc` (runs inside build/typecheck)   |
-| `pnpm routes:gen`     | regenerate `src/routeTree.gen.ts` (also runs inside build/typecheck)   |
-| `pnpm test`           | vitest watch                                                           |
-| `pnpm test:run`       | vitest single run                                                      |
-| `pnpm test:coverage`  | vitest with v8 coverage (thresholded per folder)                       |
-| `pnpm test:e2e`       | Playwright E2E                                                         |
-| `pnpm format:check`   | oxfmt check only                                                       |
-| `pnpm lint:github`    | oxlint with GitHub annotations (used by CI)                            |
-| `pnpm knip`           | unused files/exports/deps                                              |
-| `pnpm size`           | bundle budgets after build                                             |
-| `pnpm perf:ci`        | Lighthouse CI against `vite preview`                                   |
-| `pnpm ci:local`       | the full CI pipeline locally, same order as `.github/workflows/ci.yml` |
-| `pnpm deploy:cf`      | build + `wrangler deploy`                                              |
+| command              | does                                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| `pnpm dev`           | dev server (runs inside workerd, so the Worker and headers behave)     |
+| `pnpm build`         | cf-typegen + routes:gen + typecheck + production build                 |
+| `pnpm preview`       | preview the production build                                           |
+| `pnpm check`         | oxfmt write + oxlint --fix                                             |
+| `pnpm lint`          | oxfmt check + oxlint (read-only)                                       |
+| `pnpm format`        | oxfmt write                                                            |
+| `pnpm typecheck`     | cf-typegen + routes:gen + `tsc -b` over both projects, no emit         |
+| `pnpm cf-typegen`    | Worker env types from `wrangler.jsonc` (runs inside build/typecheck)   |
+| `pnpm routes:gen`    | regenerate `src/routeTree.gen.ts` (also runs inside build/typecheck)   |
+| `pnpm test`          | vitest watch                                                           |
+| `pnpm test:run`      | vitest single run                                                      |
+| `pnpm test:coverage` | vitest with v8 coverage (thresholded per folder)                       |
+| `pnpm test:e2e`      | Playwright E2E                                                         |
+| `pnpm format:check`  | oxfmt check only                                                       |
+| `pnpm lint:github`   | oxlint with GitHub annotations (used by CI)                            |
+| `pnpm knip`          | unused files/exports/deps                                              |
+| `pnpm size`          | bundle budgets after build                                             |
+| `pnpm perf:ci`       | Lighthouse CI against `vite preview`                                   |
+| `pnpm ci:local`      | the full CI pipeline locally, same order as `.github/workflows/ci.yml` |
+| `pnpm deploy:cf`     | build + `wrangler deploy`                                              |
 
 ## Routing
 

@@ -1,19 +1,32 @@
 import { screen } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { expect, test } from "vitest";
 
+import { server } from "@/test/mocks/server";
 import { renderRoute } from "@/test/render";
 
-test("renders the product home with showcase and login links", async () => {
+test("renders the migration review desk without vendor credentials", async () => {
+	server.use(
+		http.get("*/api/overview", () =>
+			HttpResponse.json({
+				loaded: false,
+				batches: [],
+				gaps: [],
+				source_count: 0,
+			}),
+		),
+		http.get("*/api/submissions", () => HttpResponse.json({ items: [] })),
+		http.get("*/api/adapters", () => HttpResponse.json({ adapters: [] })),
+	);
 	renderRoute("/");
 	await screen.findByRole("heading", {
-		name: /Start design.forward\. Stay lean\./,
+		name: "Know what you are signing off.",
 	});
-	expect(screen.getByText("vite-template")).toBeInTheDocument();
 	expect(
-		screen.getByRole("link", { name: /design system showcase/i }),
-	).toHaveAttribute("href", "/showcase");
-	expect(screen.getByRole("link", { name: /log in/i })).toHaveAttribute(
-		"href",
-		"/login",
-	);
+		screen.getByRole("button", { name: "Public example" }),
+	).toBeInTheDocument();
+	expect(
+		screen.getByRole("button", { name: "Load dataset 02" }),
+	).toBeInTheDocument();
+	expect(screen.getByText(/not a fund allocation engine/)).toBeInTheDocument();
 });
