@@ -4,12 +4,14 @@ export const routeMetadata = {
 	home: { path: "/", robots: "index,follow" },
 	review: { path: "/review", robots: "noindex,nofollow" },
 	release: { path: "/release", robots: "noindex,nofollow" },
+	// Internal state review, not part of the product surface.
+	states: { path: "/states", robots: "noindex,nofollow" },
 	notFound: { path: "/", robots: "noindex,nofollow" },
 } as const satisfies Record<string, { path: string; robots: RobotsDirective }>;
 
 export type RouteMetadataKey = keyof typeof routeMetadata;
 
-const routedKeys = ["review", "release"] as const;
+const routedKeys = ["review", "release", "states"] as const;
 
 export function matchRouteMetadata(pathname: string): RouteMetadataKey {
 	if (pathname === "" || pathname === "/") return "home";

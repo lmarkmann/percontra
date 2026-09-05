@@ -148,6 +148,7 @@
 	--color-status-exported-mark: var(--status-exported-mark);
 	--color-status-exported-tint: var(--status-exported-tint);
 	--color-status-exported-fg: var(--status-exported-fg);
+	--color-skeleton: var(--skeleton);
 	--color-ring: var(--ring);
 	--color-input: var(--input);
 	--color-border: var(--border);
@@ -257,6 +258,9 @@
 	--muted-foreground: var(--gray-700);
 	--accent: var(--gray-100);
 	--accent-foreground: var(--gray-800);
+	/* One step off --card, not --muted: those two resolve to the same value, so
+	   a placeholder painted with --muted vanishes on every card it sits on. */
+	--skeleton: var(--gray-200);
 	/* Status hues are Patina's. Lightness is set by the worst surface the token
 	   renders on (--card, not --background), which is why warning sits 0.01
 	   below Patina's editor value; an editor never puts it on a raised card. */
@@ -330,6 +334,7 @@
 	--muted-foreground: var(--gray-500);
 	--accent: var(--gray-900);
 	--accent-foreground: oklch(0.82 0.017 87);
+	--skeleton: var(--gray-800);
 	--destructive: oklch(0.65 0.161 15.938);
 	--destructive-foreground: var(--gray-950);
 	--success: oklch(0.72 0.091 128.856);
@@ -410,6 +415,7 @@
 		--primary-foreground: ButtonText;
 		--border: CanvasText;
 		--input: CanvasText;
+		--skeleton: Canvas;
 		--ring: Highlight;
 		/* Status colour collapses with everything else, which is why the brief
 		   requires a word and an icon on every status: those are what survives. */

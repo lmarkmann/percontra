@@ -21,7 +21,7 @@ export const spinnerVariants = cva(
 );
 
 /** Skeleton pulse is decorative; suppressed when motion is reduced. */
-export const skeletonVariants = cva("bg-muted motion-safe:animate-pulse", {
+export const skeletonVariants = cva("bg-skeleton motion-safe:animate-pulse", {
 	variants: {
 		variant: {
 			line: "h-4 w-full rounded-md",

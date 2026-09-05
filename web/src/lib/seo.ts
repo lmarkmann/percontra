@@ -48,6 +48,13 @@ export const routeSeo = {
 			"What changed since approval, and which approvals a changed decision made stale.",
 		ogImage: site.defaultOgImage,
 	},
+	states: {
+		...routeMetadata.states,
+		title: `${site.name} | States review`,
+		description:
+			"Every non-happy state the workbench can reach, rendered without a server.",
+		ogImage: site.defaultOgImage,
+	},
 	notFound: {
 		...routeMetadata.notFound,
 		title: `${site.name} | Not found`,

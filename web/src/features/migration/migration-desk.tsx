@@ -1,7 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ErrorState } from "@/components/error-state";
+import { LoadingSurface } from "@/components/loading-surface";
+import { MigrationSkeleton } from "@/components/migration-skeleton";
+import { ReviewQueueEmpty } from "@/components/review-queue-empty";
+import { StaleBanner } from "@/components/stale-banner";
+import { StatusMark, statusRowClass } from "@/components/status-mark";
 import { Button } from "@/components/ui/button";
+import { describeMigrationFailure } from "@/lib/migration-failure";
+import { postingStatus } from "@/lib/posting-status";
 
+import {
+	IDLE,
+	LOADING_OVERVIEW,
+	LOADING_POSTINGS,
+	reviewQueueEmptiness,
+	staleBatches,
+	type DeskActivity,
+	type OverviewState,
+	type PostingsState,
+} from "./desk-state";
 import { EvidenceDialog } from "./evidence-dialog";
 import {
 	formatAmount,
@@ -24,15 +42,14 @@ const fieldClass =
 const company = "Chalbury Co-Invest L.P.";
 
 export function MigrationDesk() {
-	const [overview, setOverview] = useState<Overview | null>(null);
+	const [overviewState, setOverviewState] =
+		useState<OverviewState>(LOADING_OVERVIEW);
 	const [adapters, setAdapters] = useState<Adapter[]>([]);
 	const [selected, setSelected] = useState("");
-	const [postings, setPostings] = useState<Posting[]>([]);
+	const [postingsState, setPostingsState] =
+		useState<PostingsState>(LOADING_POSTINGS);
 	const [offset, setOffset] = useState(0);
-	const [total, setTotal] = useState(0);
-	const [busy, setBusy] = useState("");
-	const [error, setError] = useState("");
-	const [notice, setNotice] = useState("");
+	const [activity, setActivity] = useState<DeskActivity>(IDLE);
 	const [author, setAuthor] = useState("");
 	const [gapRow, setGapRow] = useState(0);
 	const [query, setQuery] = useState("");
@@ -47,6 +64,17 @@ export function MigrationDesk() {
 	const [comparison, setComparison] = useState<Comparison | null>(null);
 	const [revision, setRevision] = useState(0);
 	const working = useRef(false);
+	const isWorking = activity.tag === "working";
+	const setDone = useCallback((notice: string) => {
+		setActivity({ tag: "done", notice });
+	}, []);
+	// The union above is the truth; this is the ready branch unwrapped, so the
+	// many read sites below do not each have to re-narrow it.
+	const overview =
+		overviewState.tag === "ready" ? overviewState.overview : null;
+	const stale = staleBatches(overview);
+	const postings = postingsState.tag === "ready" ? postingsState.items : [];
+	const total = postingsState.tag === "ready" ? postingsState.total : 0;
 	const batch = overview?.batches.find(
 		(candidate) => candidate.id === selected,
 	);
@@ -61,7 +89,7 @@ export function MigrationDesk() {
 
 	const refresh = useCallback(async () => {
 		const summary = await readApi<Overview>("overview");
-		setOverview(summary);
+		setOverviewState({ tag: "ready", overview: summary });
 		setSelected((current) =>
 			summary.batches.some((candidate) => candidate.id === current)
 				? current
@@ -75,16 +103,22 @@ export function MigrationDesk() {
 		async (label: string, operation: () => Promise<void>) => {
 			if (working.current) return;
 			working.current = true;
-			setBusy(label);
-			setError("");
-			setNotice("");
+			setActivity({ tag: "working", label });
 			try {
 				await operation();
+				setActivity(IDLE);
 			} catch (failure) {
-				if (failure instanceof Error) setError(failure.message);
+				const described = describeMigrationFailure(failure);
+				setActivity({ tag: "failed", failure: described });
+				// A failed first load has no overview to fall back on, so the whole
+				// surface owes the reviewer the error rather than an empty frame.
+				setOverviewState((current) =>
+					current.tag === "ready"
+						? current
+						: { tag: "failed", failure: described },
+				);
 			} finally {
 				working.current = false;
-				setBusy("");
 			}
 		},
 		[],
@@ -102,18 +136,26 @@ export function MigrationDesk() {
 	useEffect(() => {
 		if (!selected) return undefined;
 		let current = true;
-		setPostings([]);
+		setPostingsState(LOADING_POSTINGS);
 		void readApi<{ items: Posting[]; total: number }>(
 			`postings?batch=${selected}&offset=${offset}&revision=${revision}`,
 		)
 			.then((page) => {
 				if (current) {
-					setPostings(page.items);
-					setTotal(page.total);
+					setPostingsState({
+						tag: "ready",
+						items: page.items,
+						total: page.total,
+					});
 				}
 			})
-			.catch((failure: Error) => {
-				if (current) setError(failure.message);
+			.catch((failure: unknown) => {
+				if (current) {
+					setPostingsState({
+						tag: "failed",
+						failure: describeMigrationFailure(failure),
+					});
+				}
 			});
 		return () => {
 			current = false;
@@ -129,9 +171,7 @@ export function MigrationDesk() {
 		setAccountPlan([]);
 		setConfirmed(false);
 		await refresh();
-		setNotice(
-			"Loaded. No mapping decisions or release approvals were invented.",
-		);
+		setDone("Loaded. No mapping decisions or release approvals were invented.");
 	}
 
 	return (
@@ -169,35 +209,46 @@ export function MigrationDesk() {
 					</div>
 					<Button
 						variant="outline"
-						disabled={Boolean(busy)}
+						disabled={isWorking}
 						onClick={() => void act("Refreshing", refresh)}
 					>
 						Refresh
 					</Button>
 				</div>
+				<StaleBanner
+					batchLabels={stale}
+					onReview={() => void act("Refreshing", refresh)}
+				/>
 				<div aria-live="polite" className="space-y-2">
-					{busy && (
-						<p role="status" className="text-caption">
-							{busy}...
+					{activity.tag === "working" ? (
+						<p role="status" className="text-caption text-muted-foreground">
+							{activity.label}. Reading the workbook takes 10 to 20 seconds on
+							the full pack.
 						</p>
-					)}
-					{notice && (
+					) : null}
+					{activity.tag === "done" ? (
 						<p
 							role="status"
-							className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-caption"
+							className="rounded-lg border border-status-approved-mark/30 bg-status-approved-tint p-3 text-caption text-status-approved-fg"
 						>
-							{notice}
+							{activity.notice}
 						</p>
-					)}
-					{error && (
-						<p
-							role="alert"
-							className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-caption text-destructive"
-						>
-							{error}
-						</p>
-					)}
+					) : null}
 				</div>
+				{activity.tag === "failed" ? (
+					<ErrorState
+						layout="inline"
+						title={activity.failure.title}
+						message={activity.failure.message}
+						supportId={activity.failure.supportId}
+						onRetry={
+							activity.failure.retryable
+								? () => void act("Retrying", refresh)
+								: undefined
+						}
+						copyToastMessage="Reference copied"
+					/>
+				) : null}
 				<section
 					aria-label="Load migration"
 					className="space-y-4 rounded-xl border bg-card p-5"
@@ -216,7 +267,7 @@ export function MigrationDesk() {
 						<div className="flex flex-wrap gap-3">
 							<Button
 								variant="outline"
-								disabled={Boolean(busy)}
+								disabled={isWorking}
 								onClick={() =>
 									void act("Loading public example", () => load("example", {}))
 								}
@@ -224,7 +275,7 @@ export function MigrationDesk() {
 								Public example
 							</Button>
 							<Button
-								disabled={Boolean(busy)}
+								disabled={isWorking}
 								onClick={() =>
 									void act("Reading dataset 02", () => load("upload", {}))
 								}
@@ -265,12 +316,17 @@ export function MigrationDesk() {
 									required
 								/>
 							</label>
-							<Button type="submit" disabled={Boolean(busy)}>
+							<Button type="submit" disabled={isWorking}>
 								Upload both
 							</Button>
 						</form>
 					</details>
 				</section>
+				<LoadingSurface
+					active={overviewState.tag === "loading"}
+					skeleton={<MigrationSkeleton />}
+					slowMessage="Still reading. Large packs run to 34,000 source rows."
+				/>
 				{overview?.loaded && (
 					<>
 						<section aria-label="Batches" className="grid gap-3 md:grid-cols-3">
@@ -279,7 +335,7 @@ export function MigrationDesk() {
 									type="button"
 									key={candidate.id}
 									aria-pressed={selected === candidate.id}
-									disabled={Boolean(busy)}
+									disabled={isWorking}
 									onClick={() => {
 										setSelected(candidate.id);
 										setOffset(0);
@@ -367,59 +423,84 @@ export function MigrationDesk() {
 											</tr>
 										</thead>
 										<tbody>
-											{postings.map((posting) => (
-												<tr key={posting.posting_id} className="border-t">
-													<td className="py-3 font-mono">
-														{posting.source_refs[0]?.physical_row}
-														<span className="block text-label text-muted-foreground">
-															JE {posting.source_identity.je_index}
-														</span>
-													</td>
-													<td className="max-w-xs px-3">
-														{posting.destination?.trans_type ??
-															posting.block_reason ??
-															"Mapping decision needed"}
-													</td>
-													<td className="px-3 text-right">
-														<button
-															type="button"
-															className="min-h-11 focus-ring font-mono whitespace-nowrap text-primary underline underline-offset-4"
-															disabled={Boolean(busy)}
-															onClick={() =>
-																void act("Opening evidence", async () => {
-																	setEvidence(
-																		await readApi<Evidence>(
-																			`postings/${posting.posting_id}/evidence`,
-																		),
-																	);
-																})
-															}
-														>
-															{posting.destination
-																? `${formatAmount(posting.destination.investor_amount_local.amount, posting.destination.transaction_currency)} ${posting.destination.is_debit ? "Dr" : "Cr"}`
-																: "View source"}
-														</button>
-													</td>
-													<td className="pl-3 text-label">
-														{posting.status.replaceAll("_", " ")}
-													</td>
-												</tr>
-											))}
+											{postings.map((posting) => {
+												const status = postingStatus(posting, batch?.release);
+												return (
+													<tr
+														key={posting.posting_id}
+														className={`border-t ${statusRowClass(status)}`}
+													>
+														<td className="py-3 font-mono">
+															{posting.source_refs[0]?.physical_row}
+															<span className="block text-label text-muted-foreground">
+																JE {posting.source_identity.je_index}
+															</span>
+														</td>
+														<td className="max-w-xs px-3">
+															{posting.destination?.trans_type ??
+																posting.block_reason ??
+																"Mapping decision needed"}
+														</td>
+														<td className="px-3 text-right">
+															<button
+																type="button"
+																className="min-h-11 focus-ring font-mono whitespace-nowrap text-primary tabular-nums underline underline-offset-4"
+																disabled={isWorking}
+																onClick={() =>
+																	void act("Opening evidence", async () => {
+																		setEvidence(
+																			await readApi<Evidence>(
+																				`postings/${posting.posting_id}/evidence`,
+																			),
+																		);
+																	})
+																}
+															>
+																{posting.destination
+																	? `${formatAmount(posting.destination.investor_amount_local.amount, posting.destination.transaction_currency)} ${posting.destination.is_debit ? "Dr" : "Cr"}`
+																	: "View source"}
+															</button>
+														</td>
+														<td className="pl-3">
+															<StatusMark status={status} showNote={false} />
+														</td>
+													</tr>
+												);
+											})}
 										</tbody>
 									</table>
 								</div>
-								{postings.length === 0 && (
+								{postingsState.tag === "loading" ? (
 									<p
 										role="status"
 										className="text-caption text-muted-foreground"
 									>
-										Loading postings...
+										Reading postings for this batch.
 									</p>
-								)}
+								) : null}
+								{postingsState.tag === "ready" &&
+								postingsState.items.length === 0 ? (
+									<p
+										role="status"
+										className="text-caption text-muted-foreground"
+									>
+										This batch generated no postings. Every source row in it was
+										either out of the frozen entity scope or is waiting on a
+										decision.
+									</p>
+								) : null}
+								{postingsState.tag === "failed" ? (
+									<ErrorState
+										layout="inline"
+										title={postingsState.failure.title}
+										message={postingsState.failure.message}
+										supportId={postingsState.failure.supportId}
+									/>
+								) : null}
 								<div className="flex items-center justify-between gap-3">
 									<Button
 										variant="outline"
-										disabled={offset === 0 || Boolean(busy)}
+										disabled={offset === 0 || isWorking}
 										onClick={() => setOffset(Math.max(0, offset - 50))}
 									>
 										Previous
@@ -429,7 +510,7 @@ export function MigrationDesk() {
 									</span>
 									<Button
 										variant="outline"
-										disabled={offset + 50 >= total || Boolean(busy)}
+										disabled={offset + 50 >= total || isWorking}
 										onClick={() => setOffset(offset + 50)}
 									>
 										Next
@@ -457,14 +538,14 @@ export function MigrationDesk() {
 									)}
 									<div className="flex flex-wrap gap-3">
 										<Button
-											disabled={!ready || !author.trim() || Boolean(busy)}
+											disabled={!ready || !author.trim() || isWorking}
 											onClick={() =>
 												void act("Approving complete batch", async () => {
 													await writeApi(`releases/${selected}/approve`, {
 														author,
 													});
 													await refresh();
-													setNotice(
+													setDone(
 														"Approval saved against the current mapping and decision versions.",
 													);
 												})
@@ -474,7 +555,7 @@ export function MigrationDesk() {
 										</Button>
 										<Button
 											variant="outline"
-											disabled={!approved || Boolean(busy)}
+											disabled={!approved || isWorking}
 											onClick={() =>
 												void act("Exporting approved batch", async () => {
 													const response = await writeApi("exports", {
@@ -488,7 +569,7 @@ export function MigrationDesk() {
 													link.download = "phase1-loader.xlsx";
 													link.click();
 													setTimeout(() => URL.revokeObjectURL(url), 1000);
-													setNotice(
+													setDone(
 														"Exported; destination not checked. This is a file, not a destination receipt.",
 													);
 												})
@@ -498,7 +579,7 @@ export function MigrationDesk() {
 										</Button>
 										<Button
 											variant="ghost"
-											disabled={Boolean(busy)}
+											disabled={isWorking}
 											onClick={() =>
 												void act("Comparing reference fields", async () => {
 													setComparison(
@@ -544,6 +625,13 @@ export function MigrationDesk() {
 									a decision invalidates only dependent approvals.
 								</p>
 								<div className="space-y-2">
+									{reviewQueueEmptiness(overview, false) ? (
+										<ReviewQueueEmpty
+											reason={
+												reviewQueueEmptiness(overview, false) ?? "resolved"
+											}
+										/>
+									) : null}
 									{overview.gaps.map((candidate) => (
 										<button
 											type="button"
@@ -587,7 +675,7 @@ export function MigrationDesk() {
 												});
 												await refresh();
 												setAccountPlan([]);
-												setNotice(
+												setDone(
 													"Decision recorded. Any affected approval now requires a fresh sign-off.",
 												);
 											});
@@ -609,7 +697,7 @@ export function MigrationDesk() {
 										<Button
 											type="button"
 											variant="outline"
-											disabled={Boolean(busy)}
+											disabled={isWorking}
 											onClick={() =>
 												void act("Searching destination chart", async () => {
 													setTargets(
@@ -665,7 +753,7 @@ export function MigrationDesk() {
 												!author.trim() ||
 												!reason.trim() ||
 												!targetRow ||
-												Boolean(busy)
+												isWorking
 											}
 										>
 											Record decision v{(gap.history.at(-1)?.version ?? 0) + 1}
@@ -703,7 +791,7 @@ export function MigrationDesk() {
 						</div>
 						<Button
 							variant="outline"
-							disabled={Boolean(busy)}
+							disabled={isWorking}
 							onClick={() =>
 								void act("Checking ERPNext (read only)", async () => {
 									setConnection(
@@ -732,7 +820,7 @@ export function MigrationDesk() {
 							<div className="flex flex-wrap gap-3">
 								<Button
 									variant="outline"
-									disabled={!liveReady || Boolean(busy)}
+									disabled={!liveReady || isWorking}
 									onClick={() =>
 										void act("Previewing account changes", async () => {
 											const response = await writeApi(
@@ -750,9 +838,7 @@ export function MigrationDesk() {
 								</Button>
 								<Button
 									variant="outline"
-									disabled={
-										!liveReady || accountPlan.length === 0 || Boolean(busy)
-									}
+									disabled={!liveReady || accountPlan.length === 0 || isWorking}
 									onClick={() =>
 										void act("Provisioning company accounts", async () => {
 											const response = await writeApi(
@@ -763,7 +849,7 @@ export function MigrationDesk() {
 												accounts: AccountPlan[];
 											}>(response);
 											setAccountPlan(provisioned.accounts);
-											setNotice(
+											setDone(
 												"Company accounts checked. No journal has been posted yet.",
 											);
 										})
@@ -794,7 +880,7 @@ export function MigrationDesk() {
 									!confirmed ||
 									accountPlan.length === 0 ||
 									accountPlan.some((account) => account.action !== "reuse") ||
-									Boolean(busy)
+									isWorking
 								}
 								onClick={() =>
 									void act("Submitting and verifying ledger", async () => {
@@ -809,7 +895,7 @@ export function MigrationDesk() {
 										);
 										const receipt = await decodeJson<Receipt>(response);
 										await refresh();
-										setNotice(`${receipt.state}: ${receipt.detail}`);
+										setDone(`${receipt.state}: ${receipt.detail}`);
 										setConfirmed(false);
 									})
 								}
@@ -831,7 +917,7 @@ export function MigrationDesk() {
 								</p>
 								<Button
 									variant="outline"
-									disabled={Boolean(busy)}
+									disabled={isWorking}
 									onClick={() =>
 										void act("Re-reading destination receipt", async () => {
 											await writeApi(

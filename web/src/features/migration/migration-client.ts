@@ -8,6 +8,8 @@ import type {
 	SourceRow,
 } from "@/contract/migration";
 
+import { parseApiProblem } from "@/lib/api-problem";
+
 /** @public - reached through Overview.batches, never imported by name. */
 export type Batch = {
 	id: string;
@@ -67,20 +69,12 @@ export type Target = { row: number; account: string; trans_type: string };
 
 export async function readApi<T>(path: string): Promise<T> {
 	const response = await fetch(`/api/${path}`, { credentials: "same-origin" });
-	if (!response.ok) throw new Error(await errorMessage(response));
+	if (!response.ok) throw await parseApiProblem(response);
 	return decodeJson<T>(response);
 }
 
 export function decodeJson<T>(response: Response): Promise<T> {
 	return response.json();
-}
-
-async function errorMessage(response: Response): Promise<string> {
-	if (response.headers.get("content-type")?.includes("json")) {
-		const problem = await decodeJson<{ detail?: string }>(response);
-		return problem.detail ?? `Request failed (${response.status})`;
-	}
-	return `Request failed (${response.status}). Refresh the page and try again.`;
 }
 
 export async function writeApi(
@@ -98,7 +92,7 @@ export async function writeApi(
 		headers,
 		body: body instanceof FormData ? body : JSON.stringify(body),
 	});
-	if (!response.ok) throw new Error(await errorMessage(response));
+	if (!response.ok) throw await parseApiProblem(response);
 	return response;
 }
 
