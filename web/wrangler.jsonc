@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "vite-template",
+	"name": "percontra",
 	// Bump when you adopt new Workers runtime features; set to the day you ship the change.
 	"compatibility_date": "2026-07-09",
 	// Worker + SPA assets; full deploy architecture: docs/reference/architecture.md. Local traps:
