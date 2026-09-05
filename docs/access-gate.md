@@ -25,17 +25,21 @@ op item create --account YCFB3FTIOJBXXEMIXKC24PTKRQ --vault Developer \
 
 ```fish
 # A failed `op read` writes nothing to stdout and exits non-zero, but wrangler
-# accepts empty stdin and reports success. Land it in a file, assert the file is
-# non-empty, and only then upload. This is not belt and braces: it is exactly
-# how this gate once went live with a blank password.
-set -l tmp (mktemp)
-op read --account YCFB3FTIOJBXXEMIXKC24PTKRQ \
-  'op://Developer/percontra demo/password' > $tmp
-and test -s $tmp
+# accepts empty stdin and reports success. Assert the value is non-empty before
+# uploading it. This is not belt and braces: it is exactly how this gate once
+# went live with a blank password.
+#
+# The value stays in shell memory and never reaches disk, the command line, or
+# process arguments: `printf | wrangler` passes it on stdin, and `set -e` clears
+# it afterwards. An earlier version of this used a temp file, which on APFS
+# cannot be reliably erased once written.
+set -l pw (op read --account YCFB3FTIOJBXXEMIXKC24PTKRQ \
+  'op://Developer/percontra demo/password')
+and test -n "$pw"
 and printf '%s' 'percontra' | pnpm --dir edge exec wrangler secret put ACCESS_USER
-and pnpm --dir edge exec wrangler secret put ACCESS_PASSWORD < $tmp
+and printf '%s' "$pw" | pnpm --dir edge exec wrangler secret put ACCESS_PASSWORD
 and just deploy-edge
-rm -P $tmp
+set -e pw
 ```
 
 Then prove it, rather than trusting the deploy output:
@@ -46,6 +50,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://percontra.dev/api/health
 ```
 
 Both must be `401`. A `200` means the gate is not on, whatever wrangler said.
+A `503` means a secret went up blank; re-upload it and redeploy.
 
 Remove it the same way:
 
