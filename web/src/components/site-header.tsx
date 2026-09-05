@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { ThemeToggleLean } from "@/components/theme-toggle-lean";
 
 export function SiteHeader({
-	kicker = "vite-template",
+	kicker = "Per Contra",
 	children,
 }: {
 	kicker?: string;

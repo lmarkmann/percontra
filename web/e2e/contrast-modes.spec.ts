@@ -9,8 +9,8 @@ test.describe("contrast modes", () => {
 		page,
 	}) => {
 		await page.emulateMedia({ forcedColors: "active" });
-		await page.goto("/showcase");
-		await page.getByRole("heading", { name: "Button variants" }).waitFor();
+		await page.goto("/states");
+		await page.getByRole("heading", { name: "States review" }).waitFor();
 
 		const probe = await page.evaluate(() => {
 			const button = document.querySelector("button");
@@ -43,7 +43,7 @@ test.describe("contrast modes", () => {
 	test("prefers-contrast raises muted text and borders off their defaults", async ({
 		page,
 	}) => {
-		await page.goto("/showcase");
+		await page.goto("/states");
 		const read = () =>
 			page.evaluate(() => {
 				const style = getComputedStyle(document.documentElement);
