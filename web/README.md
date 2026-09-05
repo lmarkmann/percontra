@@ -63,7 +63,7 @@ pnpm dev
 
 ## API ports and the Worker
 
-The client ports work against any HTTP origin behind `VITE_API_BASE_URL` (FastAPI, Tauri sidecar, etc.), and a thin same-origin **Hono Worker** ships as the default server half.
+The client ports work against any HTTP origin behind `VITE_API_BASE_URL` (Django, Tauri sidecar, etc.), and a thin same-origin **Hono Worker** ships as the default server half.
 
 | Port         | Modules                                                                                                                |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------- |

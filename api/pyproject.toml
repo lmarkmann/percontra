@@ -2,20 +2,23 @@
 name = "percontra"
 version = "0.1.0"
 description = "Migration sign-off for fund accounting: decide, approve, release, compare."
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
+	"django>=5.2",
 	"duckdb>=1.3",
-	"fastapi>=0.116",
+	"fastexcel>=0.15",
 	"openpyxl>=3.1",
-	"polars[calamine]>=1.32",
+	"polars>=1.42",
+	"pyarrow>=17",
 	"pydantic>=2.11",
 	"uvicorn[standard]>=0.35",
+	"whitenoise>=6.9",
 ]
 
 [dependency-groups]
 dev = [
-	"httpx>=0.28",
 	"pytest>=8.4",
+	"pytest-django>=4.11",
 ]
 
 [project.scripts]
@@ -30,3 +33,4 @@ packages = ["percontra"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+DJANGO_SETTINGS_MODULE = "percontra.settings"
