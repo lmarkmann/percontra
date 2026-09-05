@@ -4,6 +4,7 @@ WORKDIR /web
 RUN corepack enable
 COPY web/package.json web/pnpm-lock.yaml ./
 COPY web/ ./
+ARG VITE_APP_URL=https://percontra.dev
 RUN pnpm install --frozen-lockfile && pnpm build
 
 FROM python:3.14-slim AS runtime

@@ -48,6 +48,11 @@ changeset:
 	pnpm --dir web exec changeset
 
 # web/package.json is the one version source; api derives from it.
+# percontra.dev is a Worker that proxies to the Cloud Run service (edge/proxy.ts)
+deploy-edge:
+	pnpm --dir edge install --frozen-lockfile
+	pnpm --dir edge exec wrangler deploy
+
 # Apply pending changesets: bump the version, write web/CHANGELOG.md, commit, tag. Push stays manual.
 release:
 	git diff --quiet && git diff --cached --quiet || { echo 'working tree dirty; commit or stash first'; exit 1; }

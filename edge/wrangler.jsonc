@@ -1,0 +1,15 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "percontra",
+	"main": "proxy.ts",
+	"compatibility_date": "2026-09-05",
+	"observability": {
+		"enabled": true,
+	},
+	// The Cloud Run URL is deterministic: <service>-<project number>.<region>.run.app.
+	// percontra.dev is attached to this Worker as a custom domain in the dashboard; a
+	// routes key here would make every deploy reconcile it against the zone for nothing.
+	"vars": {
+		"ORIGIN": "https://percontra-357272735706.europe-west2.run.app",
+	},
+}

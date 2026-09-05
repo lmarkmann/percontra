@@ -21,10 +21,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # The frontend lives in web/, so every run step executes there.
+    # The edge proxy worker lives in edge/; the app itself ships as a container
+    # to Cloud Run via `just deploy`, not from here.
     defaults:
       run:
-        working-directory: web
+        working-directory: edge
     # Clones inherit this workflow but not the secrets, so the deploy step skips
     # while the build still verifies the tested commit.
     env:
@@ -38,11 +39,11 @@ jobs:
       # pnpm/action-setup v6
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
         with:
-          package_json_file: web/package.json
+          package_json_file: edge/package.json
       # actions/setup-node v6.5.0
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version-file: web/.node-version
+          node-version-file: edge/.node-version
           # No dependency cache: a job that publishes a deploy artifact is the
           # cache-poisoning shape zizmor flags, and one install per deploy is
           # not worth the exposure. setup-node v6 caches on its own whenever
@@ -50,7 +51,6 @@ jobs:
           # enough; the cache has to be turned off explicitly.
           package-manager-cache: false
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
       - name: Deploy to Cloudflare Workers
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
         # cloudflare/wrangler-action v3 (tag target)
@@ -59,4 +59,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
-          workingDirectory: web
+          workingDirectory: edge
