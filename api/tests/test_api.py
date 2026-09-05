@@ -9,6 +9,7 @@ from percontra.db import connect
 @pytest.fixture()
 def client(tmp_path: Path, settings) -> Client:
     settings.DUCKDB_PATH = str(tmp_path / "t.duckdb")
+    settings.MIGRATION_DB = str(tmp_path / "migration.duckdb")
     settings.WEB_DIR = None
     connect(settings.DUCKDB_PATH).close()
     return Client()
@@ -27,9 +28,11 @@ def test_summary_says_nothing_is_ingested(client: Client) -> None:
     assert res.json() == {"ingested": False, "files": []}
 
 
-@pytest.mark.parametrize("path", ["/api/postings", "/api/decisions", "/api/releases"])
-def test_unbuilt_endpoints_answer_501(client: Client, path: str) -> None:
-    assert client.get(path).status_code == 501
+@pytest.mark.parametrize(
+    "path", ["/api/decisions", "/api/releases", "/api/overview", "/api/adapters"]
+)
+def test_migration_endpoints_have_empty_states(client: Client, path: str) -> None:
+    assert client.get(path).status_code == 200
 
 
 def test_index_points_at_the_demo_command_without_a_web_build(client: Client) -> None:

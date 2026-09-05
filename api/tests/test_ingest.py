@@ -20,9 +20,7 @@ def workbook(tmp_path: Path) -> Path:
     ws2 = wb.create_sheet("Mapping Gaps")
     ws2.append(["GL Account", "Trans Type", "Approval"])
     ws2.append(["40070 - Interest Income - Bank", "Expense: Administration Fees", None])
-    ws2.append(
-        ["30050 - Partner Transfers", "Expense: Legal & Professional Fees", None]
-    )
+    ws2.append(["30050 - Partner Transfers", "Expense: Legal & Professional Fees", None])
     path = tmp_path / "fixture.xlsx"
     wb.save(path)
     return path
@@ -90,9 +88,7 @@ def test_ingest_all_assigns_roles(workbook: Path, tmp_path: Path) -> None:
     ingest_all(db, workbook, workbook, workbook)
     conn = connect(db)
     roles = dict(
-        conn.execute(
-            "SELECT role, COUNT(DISTINCT file_digest) FROM files GROUP BY role"
-        ).fetchall()
+        conn.execute("SELECT role, COUNT(DISTINCT file_digest) FROM files GROUP BY role").fetchall()
     )
     # All three are the same file, so the last role wins on re-ingest.
     assert roles == {"reference": 1}
