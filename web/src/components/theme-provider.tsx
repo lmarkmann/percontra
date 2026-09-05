@@ -29,7 +29,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>({
 // index.html boot script. System follows the OS via the media-gated metas; an
 // explicit choice pins both to the resolved surface so the chrome matches even
 // when the OS scheme disagrees. No-ops when the metas are absent (tests).
-const THEME_SURFACE = { light: "#f5f2ed", dark: "#1a1a1a" } as const;
+const THEME_SURFACE = { light: "#f5f2ec", dark: "#1b1a16" } as const;
 
 function syncThemeColor(theme: Theme, resolved: "light" | "dark") {
 	const metas = document.querySelectorAll<HTMLMetaElement>(

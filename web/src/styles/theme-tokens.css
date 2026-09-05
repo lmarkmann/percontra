@@ -130,6 +130,24 @@
 	--z-index-modal: 100;
 	--z-index-toast: 200;
 	--z-index-tooltip: 250;
+	--color-status-ready-mark: var(--status-ready-mark);
+	--color-status-ready-tint: var(--status-ready-tint);
+	--color-status-ready-fg: var(--status-ready-fg);
+	--color-status-needs-decision-mark: var(--status-needs-decision-mark);
+	--color-status-needs-decision-tint: var(--status-needs-decision-tint);
+	--color-status-needs-decision-fg: var(--status-needs-decision-fg);
+	--color-status-blocked-mark: var(--status-blocked-mark);
+	--color-status-blocked-tint: var(--status-blocked-tint);
+	--color-status-blocked-fg: var(--status-blocked-fg);
+	--color-status-stale-mark: var(--status-stale-mark);
+	--color-status-stale-tint: var(--status-stale-tint);
+	--color-status-stale-fg: var(--status-stale-fg);
+	--color-status-approved-mark: var(--status-approved-mark);
+	--color-status-approved-tint: var(--status-approved-tint);
+	--color-status-approved-fg: var(--status-approved-fg);
+	--color-status-exported-mark: var(--status-exported-mark);
+	--color-status-exported-tint: var(--status-exported-tint);
+	--color-status-exported-fg: var(--status-exported-fg);
 	--color-ring: var(--ring);
 	--color-input: var(--input);
 	--color-border: var(--border);
@@ -189,22 +207,24 @@
 
 :root {
 	color-scheme: light dark;
-	/* Neutral ramp: the Patina ground scale, light end from Patina Stellar,
-	   dark end from Patina Dark Soft. Warm-tinted where Patina is warm and
-	   achromatic where Patina is achromatic, so there is no single hue knob;
-	   a fork retints by regenerating, not by editing one number. Sources:
-	   ~/Documents/.parked/Themes/patina-theme/palette/*.toml */
-	--gray-50: oklch(0.962 0.007 80.721);
-	--gray-100: oklch(0.928 0.01 87.473);
-	--gray-200: oklch(0.864 0.01 87.478);
-	--gray-300: oklch(0.824 0.01 87.481);
-	--gray-400: oklch(0.748 0.01 87.488);
-	--gray-500: oklch(0.645 0.001 17.191);
-	--gray-600: oklch(0.517 0 89.876);
-	--gray-700: oklch(0.455 0.014 101.768);
-	--gray-800: oklch(0.345 0.01 114.619);
-	--gray-900: oklch(0.252 0 89.876);
-	--gray-950: oklch(0.218 0 89.876);
+	/* Neutral ramp: Patina's ground lightnesses, retinted onto one paper hue.
+	   Patina's own scale went achromatic at 500, 600, 900 and 950, which broke
+	   the paper reading exactly where this product spends its pixels: hairline
+	   rules and the whole of dark mode. Lightness is unchanged step for step, so
+	   every contrast relationship Patina measured still holds; only chroma and
+	   hue move. 500 is the one exception, nudged 0.645 to 0.630 so it clears
+	   3:1 as the control boundary (docs/frontend/color-report.md). */
+	--gray-50: oklch(0.962 0.008 87);
+	--gray-100: oklch(0.928 0.01 87);
+	--gray-200: oklch(0.864 0.01 87);
+	--gray-300: oklch(0.824 0.01 87);
+	--gray-400: oklch(0.748 0.01 87);
+	--gray-500: oklch(0.63 0.009 87);
+	--gray-600: oklch(0.517 0.009 87);
+	--gray-700: oklch(0.455 0.012 87);
+	--gray-800: oklch(0.345 0.01 87);
+	--gray-900: oklch(0.252 0.008 87);
+	--gray-950: oklch(0.218 0.007 87);
 	/* Verdigris ramp, hue 161-167. Not generated: every step is the accent or
 	   accent-hover of a shipped Patina variant, so the scale is the theme's own
 	   rather than an even interpolation through colors it never had.
@@ -249,13 +269,42 @@
 	--info: oklch(0.466 0.052 217.424);
 	--info-foreground: var(--gray-50);
 	--border: var(--gray-200);
-	--input: var(--gray-200);
+	/* Not --border: a form control boundary carries meaning and owes 3:1, which
+	   the hairline at 1.35:1 does not reach. */
+	--input: var(--gray-500);
 	--ring: var(--brand-800);
 	--radius: 0.625rem;
 	--secondary-hover: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
 	--muted-hover: color-mix(in oklch, var(--muted), var(--foreground) 5%);
 	--surface-tinted: oklch(from var(--primary) 0.93 calc(c * 0.4) h);
 	--surface-tinted-hover: oklch(from var(--primary) 0.88 calc(c * 0.5) h);
+	/* The brief's six statuses, three roles each, because one value cannot do
+	   both jobs the product asks of it: a whole row washed in the colour, and a
+	   7px mark. At row-tint chroma the mark reads grey; at mark chroma thirty
+	   rows read as a rainbow. -fg is the label, and clears 4.5:1 on its own tint.
+	   ready is deliberately the plain surface: it is the majority state, and an
+	   audit paper marks the exception, not the normal. That also leaves green to
+	   approved alone, so the verdigris accent never competes with a status mark.
+	   Every value measured; ratios and commands in docs/frontend/color-report.md.
+	   Colour is never the only carrier: StatusPill ships a word and an icon too. */
+	--status-ready-mark: oklch(0.63 0.009 87);
+	--status-ready-tint: oklch(0.962 0.008 87);
+	--status-ready-fg: oklch(0.455 0.012 87);
+	--status-needs-decision-mark: oklch(0.6 0.118 82);
+	--status-needs-decision-tint: oklch(0.96 0.018 82);
+	--status-needs-decision-fg: oklch(0.43 0.085 82);
+	--status-blocked-mark: oklch(0.52 0.17 25);
+	--status-blocked-tint: oklch(0.958 0.016 25);
+	--status-blocked-fg: oklch(0.44 0.15 25);
+	--status-stale-mark: oklch(0.58 0.13 45);
+	--status-stale-tint: oklch(0.958 0.018 45);
+	--status-stale-fg: oklch(0.44 0.1 45);
+	--status-approved-mark: oklch(0.52 0.085 195);
+	--status-approved-tint: oklch(0.96 0.012 195);
+	--status-approved-fg: oklch(0.4 0.065 195);
+	--status-exported-mark: oklch(0.58 0.045 250);
+	--status-exported-tint: oklch(0.958 0.01 250);
+	--status-exported-fg: oklch(0.44 0.045 250);
 }
 
 .dark {
@@ -264,11 +313,11 @@
 	   the standalone public/404.html mirror are guarded by theme-fallback.test.ts
 	   alongside the light values above. */
 	--background: var(--gray-950);
-	--foreground: oklch(0.82 0.017 91.58);
+	--foreground: oklch(0.82 0.017 87);
 	--card: var(--gray-900);
-	--card-foreground: oklch(0.82 0.017 91.58);
+	--card-foreground: oklch(0.82 0.017 87);
 	--popover: var(--gray-900);
-	--popover-foreground: oklch(0.82 0.017 91.58);
+	--popover-foreground: oklch(0.82 0.017 87);
 	/* Dark Soft's own accent is --brand-600, which measures 4.22:1 as text on
 	   --card and misses AA. --brand-500 is Dark Soft's accent_hover, the next
 	   value Patina actually ships, and it clears at 4.98:1. */
@@ -276,11 +325,11 @@
 	--primary-foreground: var(--gray-950);
 	--primary-hover: var(--brand-400);
 	--secondary: var(--gray-900);
-	--secondary-foreground: oklch(0.82 0.017 91.58);
+	--secondary-foreground: oklch(0.82 0.017 87);
 	--muted: var(--gray-900);
 	--muted-foreground: var(--gray-500);
 	--accent: var(--gray-900);
-	--accent-foreground: oklch(0.82 0.017 91.58);
+	--accent-foreground: oklch(0.82 0.017 87);
 	--destructive: oklch(0.65 0.161 15.938);
 	--destructive-foreground: var(--gray-950);
 	--success: oklch(0.72 0.091 128.856);
@@ -289,8 +338,8 @@
 	--warning-foreground: var(--gray-950);
 	--info: oklch(0.692 0.071 211.343);
 	--info-foreground: var(--gray-950);
-	--border: oklch(0.321 0 89.876);
-	--input: oklch(0.36 0 89.876);
+	--border: var(--gray-800);
+	--input: var(--gray-600);
 	--ring: var(--brand-500);
 	--shadow-border:
 		0 0 0 1px oklch(1 0 0 / 0.08), 0 1px 2px -1px oklch(1 0 0 / 0.08),
@@ -305,6 +354,26 @@
 	--surface-tinted-hover: oklch(from var(--primary) 0.28 calc(c * 0.22) h);
 	--shadow-elevated: 0 0 0 1px oklch(1 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.28);
 	--shadow-floating: 0 0 0 1px oklch(1 0 0 / 0.08), 0 16px 40px oklch(0 0 0 / 0.36);
+	/* Dark is designed, not inverted: tints rise off the ground rather than
+	   dropping below it, and the marks brighten so they survive on a dark row. */
+	--status-ready-mark: oklch(0.63 0.009 87);
+	--status-ready-tint: oklch(0.218 0.007 87);
+	--status-ready-fg: oklch(0.63 0.009 87);
+	--status-needs-decision-mark: oklch(0.78 0.13 82);
+	--status-needs-decision-tint: oklch(0.283 0.024 82);
+	--status-needs-decision-fg: oklch(0.84 0.09 82);
+	--status-blocked-mark: oklch(0.68 0.16 25);
+	--status-blocked-tint: oklch(0.283 0.024 25);
+	--status-blocked-fg: oklch(0.78 0.11 25);
+	--status-stale-mark: oklch(0.74 0.13 45);
+	--status-stale-tint: oklch(0.281 0.024 45);
+	--status-stale-fg: oklch(0.82 0.1 45);
+	--status-approved-mark: oklch(0.72 0.09 195);
+	--status-approved-tint: oklch(0.283 0.018 195);
+	--status-approved-fg: oklch(0.82 0.07 195);
+	--status-exported-mark: oklch(0.7 0.05 250);
+	--status-exported-tint: oklch(0.281 0.012 250);
+	--status-exported-fg: oklch(0.8 0.045 250);
 }
 
 /*
@@ -342,6 +411,26 @@
 		--border: CanvasText;
 		--input: CanvasText;
 		--ring: Highlight;
+		/* Status colour collapses with everything else, which is why the brief
+		   requires a word and an icon on every status: those are what survives. */
+		--status-ready-mark: CanvasText;
+		--status-ready-tint: Canvas;
+		--status-ready-fg: CanvasText;
+		--status-needs-decision-mark: CanvasText;
+		--status-needs-decision-tint: Canvas;
+		--status-needs-decision-fg: CanvasText;
+		--status-blocked-mark: CanvasText;
+		--status-blocked-tint: Canvas;
+		--status-blocked-fg: CanvasText;
+		--status-stale-mark: CanvasText;
+		--status-stale-tint: Canvas;
+		--status-stale-fg: CanvasText;
+		--status-approved-mark: CanvasText;
+		--status-approved-tint: Canvas;
+		--status-approved-fg: CanvasText;
+		--status-exported-mark: CanvasText;
+		--status-exported-tint: Canvas;
+		--status-exported-fg: CanvasText;
 	}
 }
 
@@ -363,5 +452,18 @@
 		--muted-foreground: var(--gray-400);
 		--border: var(--gray-600);
 		--input: var(--gray-600);
+	}
+
+	/* Status labels drop their tint and sit on the plain surface, where the -fg
+	   values already measure 6.5:1 or better in both themes. Raising the tint
+	   instead would push the row background toward the text it carries. */
+	:root,
+	.dark {
+		--status-ready-tint: transparent;
+		--status-needs-decision-tint: transparent;
+		--status-blocked-tint: transparent;
+		--status-stale-tint: transparent;
+		--status-approved-tint: transparent;
+		--status-exported-tint: transparent;
 	}
 }

@@ -75,4 +75,3 @@ test("in-slot presets: crossfade is opacity-only; settle uses 4px Y", () => {
 	const exit = cellSettle.exit.transition.duration;
 	expect(exit).toBeCloseTo(cellSettle.transition.duration * 0.75, 5);
 });
-

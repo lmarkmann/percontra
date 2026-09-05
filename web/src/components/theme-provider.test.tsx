@@ -80,8 +80,8 @@ describe("ThemeProvider", () => {
 			</ThemeProvider>,
 		);
 
-		expect(light.content).toBe("#1a1a1a");
-		expect(dark.content).toBe("#1a1a1a");
+		expect(light.content).toBe("#1b1a16");
+		expect(dark.content).toBe("#1b1a16");
 	});
 
 	it("keeps the theme-color metas scheme-gated in system mode", () => {
@@ -94,7 +94,7 @@ describe("ThemeProvider", () => {
 			</ThemeProvider>,
 		);
 
-		expect(light.content).toBe("#f5f2ed");
-		expect(dark.content).toBe("#1a1a1a");
+		expect(light.content).toBe("#f5f2ec");
+		expect(dark.content).toBe("#1b1a16");
 	});
 });
