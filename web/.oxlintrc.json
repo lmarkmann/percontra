@@ -20,6 +20,7 @@
 		"node_modules/**",
 		"coverage/**",
 		"src/routeTree.gen.ts",
+		"src/contract/migration.ts",
 		".claude/**",
 		".agents/**",
 		".grok/**",

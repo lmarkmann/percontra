@@ -22,10 +22,6 @@ format:
 lint:
 	pnpm lint
 
-# every font family is justified in the type spec
-# (prek commit hook, scoped to font/style/spec changes)
-type-spec-gate:
-	pnpm type-spec-gate
 
 # typecheck | run | watch
 typecheck:

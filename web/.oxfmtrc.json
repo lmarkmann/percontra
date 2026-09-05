@@ -58,6 +58,7 @@
 	"ignorePatterns": [
 		"dist/**",
 		"src/routeTree.gen.ts",
+		"src/contract/migration.ts",
 		"src/index.css",
 		"src/critical.css",
 		"src/styles/*.css",

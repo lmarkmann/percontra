@@ -107,3 +107,14 @@ Object.defineProperty(window, "matchMedia", {
 		dispatchEvent: () => false,
 	}),
 });
+
+// happy-dom creates an Animation's `finished` promise eagerly and rejects it on
+// cancel(); browsers only report that rejection when something awaited it, so
+// motion's cleanup cancels are silent there and unhandled rejections here.
+// Mark the promise handled before happy-dom rejects it.
+// oxlint-disable-next-line typescript/unbound-method -- rebound through call() in the override
+const cancelAnimation = Animation.prototype.cancel;
+Animation.prototype.cancel = function cancelWithoutUnhandledRejection() {
+	this.finished.catch(() => {});
+	cancelAnimation.call(this);
+};

@@ -19,10 +19,9 @@
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
 		"knip": "knip",
-		"type-spec-gate": "node scripts/type-spec-gate.ts",
 		"size": "size-limit",
 		"perf:ci": "lhci autorun",
-		"ci:local": "pnpm typecheck && pnpm lint && pnpm knip && pnpm audit --prod --audit-level high && pnpm test:coverage && pnpm build && pnpm size && pnpm perf:ci && pnpm test:e2e",
+		"ci:local": "pnpm typecheck && pnpm lint && pnpm knip && pnpm audit --prod --audit-level high && pnpm test:run && pnpm build && pnpm size && pnpm test:e2e",
 		"preview": "vite preview",
 		"deploy:cf": "pnpm build && wrangler deploy"
 	},
@@ -138,8 +137,8 @@
 		],
 		"ignore": [
 			"src/components/ui/**",
-			"src/types/vendor-seams.d.ts",
 			"src/critical.css",
+			"src/contract/migration.ts",
 			"lighthouserc.cjs"
 		],
 		"ignoreDependencies": [

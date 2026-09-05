@@ -18,8 +18,10 @@ dependencies = [
 [dependency-groups]
 dev = [
 	"datamodel-code-generator>=0.76.2",
+	"pyrefly>=1.2.0",
 	"pytest>=9.1",
 	"pytest-django>=4.14",
+	"ruff>=0.16.6",
 ]
 
 [project.scripts]
@@ -40,3 +42,27 @@ DJANGO_SETTINGS_MODULE = "percontra.settings"
 [tool.hatch.version]
 path = "../web/package.json"
 pattern = '"version": "(?P<version>[^"]+)"'
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["percontra/contract/models.py"]
+
+[tool.ruff.lint]
+# Bugs and hygiene, not style policing: pyflakes, bugbear, pyupgrade, import order,
+# naming (the N family is what .claude/rules/naming-py.md relies on), ruff's own.
+select = ["E4", "E7", "E9", "F", "I", "N", "UP", "B", "RUF"]
+
+[tool.pyrefly]
+project-includes = ["percontra", "../scripts"]
+python-version = "3.14"
+
+# Warnings, not errors, while the pipeline passes untyped dicts around and openpyxl
+# returns Optionals everywhere: these six categories are all inference noise on this
+# code today. Flip each back to "error" once the module it fires in carries real types.
+[tool.pyrefly.errors]
+missing-attribute = "warn"
+unsupported-operation = "warn"
+bad-assignment = "warn"
+bad-argument-type = "warn"
+bad-return = "warn"
+bad-index = "warn"

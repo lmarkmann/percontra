@@ -28,8 +28,21 @@ just build   # web app only
 just ingest  # the three workbooks into DuckDB (idempotent)
 just dev     # serve only
 just test    # API test suite
+just lint    # API: ruff, pyrefly, contract drift (what CI runs)
+just fix     # API: apply ruff fixes and formatting
 just deploy  # Cloud Run
 ```
+
+## Checks
+
+CI (`.github/workflows/ci.yml`) runs three jobs on every push and pull
+request: `web` (oxfmt, tsc, oxlint, knip, audit, Vitest, build,
+size-limit, Playwright; the Playwright HTML report with a screenshot of
+every test is uploaded as the `playwright-report` artifact), `api`
+(ruff check and format, pyrefly, pytest, contract drift between
+`contracts/*.schema.json` and the generated Python and TypeScript), and
+`container` (the Dockerfile builds). `just lint` and `pnpm --dir web
+ci:local` run the same gates locally.
 
 ## Layout
 

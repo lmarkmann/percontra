@@ -56,3 +56,19 @@ release:
 	git commit -m "chore(release): v$(jq -r .version web/package.json)"
 	pnpm --dir web exec changeset tag
 	@echo "tagged v$(jq -r .version web/package.json). Push with: git push --follow-tags"
+
+# api: ruff, ruff format --check, pyrefly, contract drift (what ci.yml runs)
+lint:
+	uv run --directory api ruff check . ../scripts
+	uv run --directory api ruff format --check . ../scripts
+	uv run --directory api pyrefly check
+	api/.venv/bin/python scripts/contracts.py --check
+
+# api: apply ruff fixes and formatting
+fix:
+	uv run --directory api ruff check --fix . ../scripts
+	uv run --directory api ruff format . ../scripts
+
+# web: the ci.yml web job, locally (pnpm ci:local)
+lint-web:
+	pnpm --dir web ci:local

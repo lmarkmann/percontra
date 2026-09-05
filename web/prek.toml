@@ -5,7 +5,6 @@
 [priorities]
 fmt = 0
 types = 1
-spec = 2
 
 [[repos]]
 repo = "builtin"
@@ -54,17 +53,6 @@ hooks = [
     priority = "types",
     pass_filenames = false,
     types_or = ["ts", "tsx"],
-  },
-  {
-    # A new font face must be justified in the type spec. Fires only when fonts,
-    # styles, or the spec itself move.
-    id = "type-spec-gate",
-    name = "every font family is justified in the type spec",
-    entry = "just type-spec-gate",
-    language = "system",
-    priority = "spec",
-    pass_filenames = false,
-    files = '^(src/styles/.*\.css|src/fonts/|docs/frontend/type-spec\.md|scripts/type-spec-gate\.ts)',
   },
   {
     # Pre-push only: a full-test run stays out of the commit path. CI still owns

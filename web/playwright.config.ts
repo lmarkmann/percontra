@@ -9,10 +9,14 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
-	reporter: process.env.CI ? "github" : "list",
+	// CI keeps the HTML report (screenshots of every test, video and trace of
+	// failures) and ci.yml uploads playwright-report/ as a run artifact.
+	reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
 	use: {
 		baseURL,
 		trace: "on-first-retry",
+		screenshot: process.env.CI ? "on" : "off",
+		video: process.env.CI ? "retain-on-failure" : "off",
 	},
 	webServer: {
 		// preview serves the last build; rebuild locally so e2e never tests a stale dist (CI builds two steps earlier)

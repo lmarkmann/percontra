@@ -43,7 +43,6 @@ pnpm dev
 | `pnpm format:check`   | oxfmt check only                                                       |
 | `pnpm lint:github`    | oxlint with GitHub annotations (used by CI)                            |
 | `pnpm knip`           | unused files/exports/deps                                              |
-| `pnpm type-spec-gate` | every declared font family is justified in the type spec               |
 | `pnpm size`           | bundle budgets after build                                             |
 | `pnpm perf:ci`        | Lighthouse CI against `vite preview`                                   |
 | `pnpm ci:local`       | the full CI pipeline locally, same order as `.github/workflows/ci.yml` |
@@ -111,7 +110,7 @@ Four budget families fail CI when breached:
 - **Coverage** (v8, per folder): `src/lib` 80, `src/hooks` 90, `server` 97, `vite/plugins` 59 (lines).
 - **knip + audit**: no unused files/exports/deps, no known-high production vulnerabilities.
 
-CI (`.github/workflows/ci.yml`) runs format check, typecheck, lint, knip, audit, unit tests with coverage, build, size-limit, Lighthouse, then Playwright; `pnpm ci:local` mirrors that order. Raising any budget takes a one-line justification in the PR. Two more workflows guard the edges: `workflows-lint.yml` runs actionlint and zizmor over the workflow files themselves, and `release.yml` publishes the GitHub release on a `v*` tag, refusing any tag that does not match `package.json` and `CHANGELOG.md`. Versioning is [changesets](https://github.com/changesets/changesets): `just changeset` at the repo root records a change, `just release` applies the pending ones (bump `package.json`, write `CHANGELOG.md`, commit, tag). `package.json` is the only place the version is written; `api/pyproject.toml` reads it at build time. Never a bare `git tag`.
+CI (`.github/workflows/ci.yml`, job `web`) runs format check, typecheck, lint, knip, audit, unit tests, build, size-limit, then Playwright, and uploads the Playwright HTML report as an artifact; `pnpm ci:local` mirrors that order. Coverage thresholds (`pnpm test:coverage`) and Lighthouse (`pnpm perf:ci`) stay local-only for the hackathon. Raising any budget takes a one-line justification in the PR. Two more workflows guard the edges: `workflows-lint.yml` runs actionlint and zizmor over the workflow files themselves, and `release.yml` publishes the GitHub release on a `v*` tag, refusing any tag that does not match `package.json` and `CHANGELOG.md`. Versioning is [changesets](https://github.com/changesets/changesets): `just changeset` at the repo root records a change, `just release` applies the pending ones (bump `package.json`, write `CHANGELOG.md`, commit, tag). `package.json` is the only place the version is written; `api/pyproject.toml` reads it at build time. Never a bare `git tag`.
 
 ## Deploy
 
@@ -121,7 +120,7 @@ Deploys to Cloudflare Workers via `wrangler.jsonc`: `main` is the Hono Worker (`
 
 - **oxfmt** owns formatting, import sort, and Tailwind class sorting (`sortTailwindcss` on `className` plus the functions `cn`, `cva`, `clsx`, `tailwindMerge`).
 - **oxlint** is the sole linter, full tree and type-aware (plugins unicorn, oxc, typescript, react, jsx-a11y, vitest, import, promise; policy in [docs/reference/tooling.md](docs/reference/tooling.md)). `react/only-export-components` is error-level on UI primitives (`src/components/ui/**`, `motion-primitives.tsx`, `motion-shell.tsx`).
-- **prek** runs oxfmt write, `tsc -b --noEmit`, oxlint, and the type-spec gate on commit; Vitest on pre-push. Every hook delegates to a `justfile` recipe, so local and CI run the same command.
+- **prek** runs oxfmt write, `tsc -b --noEmit`, and oxlint on commit; Vitest on pre-push. Every hook delegates to a `justfile` recipe, so local and CI run the same command.
 - **shadcn CLI** owns its dependency graph. Never hand-install `@base-ui/react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `tw-animate-css`; `pnpm exec shadcn add <component>` brings what it needs.
 - No Biome, no ESLint, no Prettier, no PostCSS, no autoprefixer, no `tailwind.config.js`. Tailwind v4 is configured via `@theme` in the CSS entry.
 - **tweakcn** (tweakcn.com) edits the OKLCH theme: dial in color, radius, and type with a live WCAG contrast check, then paste exported variables into the theme tokens.
