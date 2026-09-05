@@ -96,3 +96,8 @@ def test_invalid_decision_never_appends_history(operator):
     )
     assert rejected.status_code == 400
     assert client.get("/api/overview").json()["gaps"][0]["history"] == []
+
+
+def test_non_object_json_is_a_client_error(operator):
+    _, post = operator
+    assert post("/api/decisions", []).status_code == 400

@@ -2,8 +2,10 @@ from decimal import Decimal
 
 import pytest
 
+from percontra import submissions
 from percontra.adapters.destination.erpnext import COMPANY, ERPNextAdapter
 from percontra.erpnext_smoke import prepare
+from percontra.example import load_example
 
 
 def test_gbp_fixture_is_separate_balanced_and_evidenced(tmp_path):
@@ -37,3 +39,11 @@ def test_gbp_fixture_is_separate_balanced_and_evidenced(tmp_path):
 def test_gbp_test_does_not_disable_currency_checks():
     with pytest.raises(Exception, match="same-currency"):
         ERPNextAdapter(currency="JPY")
+
+
+def test_original_run_retains_its_currency_after_switching_migrations(tmp_path):
+    service, _ = prepare(tmp_path / "smoke.duckdb")
+    original = service.context()[0]
+    load_example(service)
+    assert submissions.adapter(service).currency == "USD"
+    assert submissions.adapter(service, original).currency == "GBP"

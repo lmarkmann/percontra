@@ -72,8 +72,8 @@ class ERPNextAdapter:
         source_evidence="partial",
         investor_allocation="partial",
         decision_author_reason="partial",
-        destination_receipt="unverified",
-        change_impact="unverified",
+        destination_receipt="partial",
+        change_impact="partial",
     )
 
     def __init__(self, connection=None, chart=None, currency="USD"):

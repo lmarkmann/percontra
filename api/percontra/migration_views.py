@@ -13,6 +13,7 @@ from . import submissions
 from .adapters.base import UploadedFile
 from .adapters.destination.erpnext import ERPError, ERPNextAdapter
 from .adapters.registry import catalog
+from .erpnext_smoke import SMOKE_DB
 from .service import LOCK, ROOT, MigrationService
 
 
@@ -49,6 +50,8 @@ def endpoint(request, resource, identifier=None, action=None):
             operator(request)
             if request.content_type == "application/json":
                 body = json.loads(request.body)
+                if not isinstance(body, dict):
+                    raise ValueError("JSON request body must be an object")
         with LOCK:
             current = service()
             if resource == "csrf" and request.method == "GET":
@@ -143,9 +146,28 @@ def endpoint(request, resource, identifier=None, action=None):
             if resource == "compare" and request.method == "GET":
                 return JsonResponse(current.compare(request.GET["batch"]))
             if resource == "erpnext":
+                if action == "smoke":
+                    if not SMOKE_DB.exists():
+                        return JsonResponse(
+                            {"label": "GBP connectivity test has not been run", "items": []}
+                        )
+                    smoke = MigrationService(SMOKE_DB)
+                    attempts = submissions.latest(smoke)
+                    if request.method == "POST":
+                        if not attempts:
+                            raise ValueError("No GBP test receipt is available to verify")
+                        return JsonResponse(submissions.verify(smoke, attempts[-1]["id"]))
+                    return JsonResponse(
+                        {
+                            "label": "Synthetic GBP connectivity test, not dataset 02",
+                            "items": [row["receipt"] for row in attempts],
+                        }
+                    )
                 if request.method == "GET":
                     try:
-                        return JsonResponse(ERPNextAdapter().preflight())
+                        return JsonResponse(
+                            ERPNextAdapter(currency=request.GET.get("currency", "USD")).preflight()
+                        )
                     except ERPError as error:
                         return JsonResponse({"configured": False, "problems": [str(error)]})
                 destination = submissions.adapter(current)
@@ -163,6 +185,8 @@ def endpoint(request, resource, identifier=None, action=None):
                     )
                 if action == "verify":
                     return JsonResponse(submissions.verify(current, identifier))
+                if action is not None:
+                    raise ValueError("Unknown submission action")
                 if body.get("confirm_company") != "Chalbury Co-Invest L.P.":
                     raise ValueError("Confirm the target company before posting")
                 return JsonResponse(

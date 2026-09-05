@@ -31,7 +31,7 @@ def sheet_names(path: str | Path) -> list[str]:
 
 
 def read_header(path: str | Path, sheet: str) -> tuple[list[str], list[str]]:
-    """Original header texts and Excel column letters, row 1."""
+    """Original header texts and letters at the sheet's configured header row."""
     wb = load_workbook(path, read_only=True)
     try:
         ws = wb[sheet]

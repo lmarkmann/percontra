@@ -6,6 +6,8 @@ from .core.generate import digest
 from .example import example_payload
 from .service import ROOT, MigrationService
 
+SMOKE_DB = ROOT / "data/erpnext-gbp-smoke.duckdb"
+
 
 def payload():
     example = example_payload()
@@ -66,7 +68,7 @@ def payload():
 def prepare(path=None):
     import json
 
-    service = MigrationService(path or ROOT / "data/erpnext-gbp-smoke.duckdb")
+    service = MigrationService(path or SMOKE_DB)
     fixture = payload()
     (service.store.path.parent / "synthetic-gbp-connectivity.json").write_text(
         json.dumps(fixture["fixture_document"], sort_keys=True, separators=(",", ":"))

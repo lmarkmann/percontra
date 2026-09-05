@@ -46,10 +46,17 @@ def submit(service, batch, idempotency_key):
     if not idempotency_key or len(idempotency_key) > 128:
         raise ValueError("An idempotency key of at most 128 characters is required")
     with LOCK:
+        current_run = service.context()[0]
         for prior in latest(service):
             if prior["idempotency_key"] == idempotency_key:
-                if prior["batch"] != batch:
-                    raise ValueError("Idempotency key already belongs to another batch")
+                if prior["batch"] != batch or prior["run_id"] != current_run:
+                    raise ValueError(
+                        "Idempotency key already belongs to another batch or migration"
+                    )
+                if snapshot(service.approved(batch)) != prior["approval_digest"]:
+                    raise ValueError(
+                        "This key belongs to an older approval; verify its receipt, do not repost"
+                    )
                 return prior["receipt"]
             if prior["batch"] == batch and prior["receipt"]["state"] != "rejected":
                 raise ValueError(
