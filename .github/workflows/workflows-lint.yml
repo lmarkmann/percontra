@@ -1,0 +1,73 @@
+name: workflows-lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Lints and security-audits the GitHub Actions workflow definitions themselves.
+# Kept as a dedicated, minimal job rather than folded into ci.yml because it is
+# fast (~seconds), independent of the app toolchain, and has a different failure
+# signal than the app build. Placed in CI, not prek: a workflow syntax or supply
+# chain slip should gate merges here, on the branch that actually runs it, not
+# at the local commit gate. prek stays for app-code checks; this owns the
+# workflow definitions that CI itself runs.
+#
+#   actionlint  - static checker for workflow correctness (shell/bash in run:,
+#                 on: syntax, expression errors). https://github.com/rhysd/actionlint
+#   zizmor      - security audit for GitHub Actions (unpinned uses/images,
+#                 secrets in logs, dangerous permissions). https://docs.zizmor.sh
+#                 Runs offline (no GH_TOKEN) so no secrets are exposed and audit
+#                 results cannot be influenced by the network.
+#
+# Both are installed as version-pinned release binaries (no script-of-the-week,
+# no package-manager toolchain) so the job stays reproducible and supply-chain
+# hygiene is explicit at a glance.
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # actions/checkout v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: actionlint (workflow syntax)
+        # actionlint ships as a single static binary. Download the exact version
+        # tag (never `main`, never `-latest` images) so the audit is reproducible.
+        run: |
+          set -euo pipefail
+          VERSION="1.7.12"
+          curl -fsSL -o /tmp/actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp
+          chmod +x /tmp/actionlint
+          /tmp/actionlint -color
+        shell: bash
+
+      - name: zizmor (workflow security audit)
+        env:
+          ZIZMOR_VERSION: "1.29.0"
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/zizmor.tar.gz \
+            "https://github.com/zizmorcore/zizmor/releases/download/v${ZIZMOR_VERSION}/zizmor-x86_64-unknown-linux-gnu.tar.gz"
+          mkdir -p /tmp/zizmor-dist
+          tar -xzf /tmp/zizmor.tar.gz -C /tmp/zizmor-dist
+          # Scoped to the extraction directory on purpose: `find /tmp` walks the
+          # runner's root-owned systemd private dirs, exits 1 on the permission
+          # errors, and under pipefail that kills the step before zizmor runs.
+          ZIZMOR_BIN="$(find /tmp/zizmor-dist -type f -name zizmor | head -n1)"
+          chmod +x "${ZIZMOR_BIN}"
+          # --format=github drives the run's exit code and renders findings as
+          # annotations; offline, so GITHUB_TOKEN is deliberately not provided.
+          "${ZIZMOR_BIN}" --format=github .
+        shell: bash

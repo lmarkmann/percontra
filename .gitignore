@@ -1,0 +1,22 @@
+# datasets stay out of the public repo; only the placement doc is tracked
+data/*
+!data/README.md
+
+# python
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+
+# local database
+*.duckdb
+*.duckdb.wal
+
+# web build artifacts (web/.gitignore covers the template's own set too)
+web/dist/
+web/node_modules/
+
+# edge worker
+edge/node_modules/
+edge/.wrangler/

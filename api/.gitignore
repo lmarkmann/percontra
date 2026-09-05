@@ -1,0 +1,9 @@
+.coverage
+htmlcov/
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+*.duckdb
+*.duckdb.wal
