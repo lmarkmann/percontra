@@ -48,8 +48,7 @@
 			["parent", "sibling", "index"],
 			"style",
 			"unknown"
-		],
-		"customGroups": []
+		]
 	},
 	"sortTailwindcss": {
 		"stylesheet": "./src/index.css",

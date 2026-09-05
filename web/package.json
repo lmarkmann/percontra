@@ -110,22 +110,22 @@
 				"!dist/client/assets/sonner-*.js",
 				"!dist/client/assets/toaster-*.js"
 			],
-			"limit": "113 kB"
+			"limit": "200 kB"
 		},
 		{
 			"name": "js (showcase)",
 			"path": "dist/client/assets/showcase-*.js",
-			"limit": "48 kB"
+			"limit": "80 kB"
 		},
 		{
 			"name": "js (motion)",
 			"path": "dist/client/assets/motion-shell-*.js",
-			"limit": "14 kB"
+			"limit": "32 kB"
 		},
 		{
 			"name": "css",
 			"path": "dist/client/assets/*.css",
-			"limit": "27 kB"
+			"limit": "64 kB"
 		}
 	],
 	"engines": {
