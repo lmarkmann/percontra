@@ -111,7 +111,7 @@ Four budget families fail CI when breached:
 - **Coverage** (v8, per folder): `src/lib` 80, `src/hooks` 90, `server` 97, `vite/plugins` 59 (lines).
 - **knip + audit**: no unused files/exports/deps, no known-high production vulnerabilities.
 
-CI (`.github/workflows/ci.yml`) runs format check, typecheck, lint, knip, audit, unit tests with coverage, build, size-limit, Lighthouse, then Playwright; `pnpm ci:local` mirrors that order. Raising any budget takes a one-line justification in the PR. Two more workflows guard the edges: `workflows-lint.yml` runs actionlint and zizmor over the workflow files themselves, and `release.yml` publishes the GitHub release on a `v*` tag, refusing any tag whose version is missing from `docs/CHANGELOG.md`. Cut releases with `just release`, never a bare `git tag` (ADR 039).
+CI (`.github/workflows/ci.yml`) runs format check, typecheck, lint, knip, audit, unit tests with coverage, build, size-limit, Lighthouse, then Playwright; `pnpm ci:local` mirrors that order. Raising any budget takes a one-line justification in the PR. Two more workflows guard the edges: `workflows-lint.yml` runs actionlint and zizmor over the workflow files themselves, and `release.yml` publishes the GitHub release on a `v*` tag, refusing any tag that does not match `package.json` and `CHANGELOG.md`. Versioning is [changesets](https://github.com/changesets/changesets): `just changeset` at the repo root records a change, `just release` applies the pending ones (bump `package.json`, write `CHANGELOG.md`, commit, tag). `package.json` is the only place the version is written; `api/pyproject.toml` reads it at build time. Never a bare `git tag`.
 
 ## Deploy
 

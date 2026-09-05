@@ -1,6 +1,6 @@
 [project]
 name = "percontra"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Migration sign-off for fund accounting: decide, approve, release, compare."
 requires-python = ">=3.14"
 dependencies = [
@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+	"datamodel-code-generator>=0.76.2",
 	"pytest>=9.1",
 	"pytest-django>=4.14",
 ]
@@ -34,3 +35,8 @@ packages = ["percontra"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE = "percontra.settings"
+
+# The version lives once, in web/package.json, where `changeset version` bumps it.
+[tool.hatch.version]
+path = "../web/package.json"
+pattern = '"version": "(?P<version>[^"]+)"'

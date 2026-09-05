@@ -12,23 +12,17 @@ concurrency:
   cancel-in-progress: false
 
 # Publishes the GitHub release for a version tag. The body is that version's
-# section of docs/CHANGELOG.md, re-derived from the commits with git-cliff
-# rather than sliced out of the file, so the release and the file cannot say
-# different things.
+# section of web/CHANGELOG.md, which `changeset version` wrote from the
+# changesets that accumulated since the previous release.
 #
-# The tag is cut by `just release`, which writes the section, commits it, and
-# annotates the tag with the headline. Tagging by hand skips that, so the first
-# step checks the file actually has a section for this tag and fails loudly if
-# it does not.
+# The tag is cut by `just release`, which bumps web/package.json, writes the
+# changelog section, commits both, and tags with `changeset tag`. Tagging by
+# hand skips that, so the first step checks the tag matches the manifest and
+# the changelog carries a section for it, and fails loudly if not.
 #
-# git-cliff arrives as its pinned release binary, checksum-verified, the same
-# way workflows-lint.yml installs actionlint and zizmor: this job needs one tool
-# and no application toolchain, and a tag-push job that publishes an artifact is
-# the cache-poisoning shape a Node dependency cache would open up. The version
-# is read from web/package.json so the local devDependency and CI stay one pin.
-#
-# No separate test gate: a version tag points at a commit that already went
-# through `ci` on main.
+# No toolchain: the job reads two files and calls gh. No separate test gate
+# either, since a version tag points at a commit that already went through
+# `ci` on main.
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -39,32 +33,23 @@ jobs:
       # actions/checkout v7.0.1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          # git-cliff walks the tag history and reads the annotated tag message.
-          fetch-depth: 0
           persist-credentials: false
 
-      - name: docs/CHANGELOG.md carries this version
+      - name: Tag matches web/package.json and web/CHANGELOG.md
         env:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          if ! grep -qF "## ${TAG#v} - " docs/CHANGELOG.md; then
-            echo "::error::no section for ${TAG} in docs/CHANGELOG.md; cut releases with 'just release', not a bare git tag"
+          VERSION="${TAG#v}"
+          MANIFEST="$(jq -r .version web/package.json)"
+          if [ "${MANIFEST}" != "${VERSION}" ]; then
+            echo "::error::tag ${TAG} but web/package.json says ${MANIFEST}; cut releases with 'just release', not a bare git tag"
             exit 1
           fi
-        shell: bash
-
-      - name: git-cliff
-        run: |
-          set -euo pipefail
-          VERSION="$(jq -r '.devDependencies["git-cliff"]' web/package.json)"
-          ASSET="git-cliff-${VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          BASE="https://github.com/orhun/git-cliff/releases/download/v${VERSION}"
-          curl -fsSL -o "/tmp/${ASSET}" "${BASE}/${ASSET}"
-          curl -fsSL -o "/tmp/${ASSET}.sha512" "${BASE}/${ASSET}.sha512"
-          (cd /tmp && sha512sum -c "${ASSET}.sha512")
-          tar -xzf "/tmp/${ASSET}" -C /tmp
-          find /tmp -type f -name git-cliff -perm -u+x | head -n1 > /tmp/git-cliff-path
+          if ! grep -qxF "## ${VERSION}" web/CHANGELOG.md; then
+            echo "::error::no section for ${VERSION} in web/CHANGELOG.md; cut releases with 'just release', not a bare git tag"
+            exit 1
+          fi
         shell: bash
 
       - name: Publish the release
@@ -73,6 +58,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          "$(cat /tmp/git-cliff-path)" --config web/cliff.toml --latest --strip all > /tmp/release-body.md
+          VERSION="${TAG#v}"
+          awk -v heading="## ${VERSION}" '
+            $0 == heading { printing = 1; next }
+            printing && /^## / { exit }
+            printing { print }
+          ' web/CHANGELOG.md > /tmp/release-body.md
           gh release create "${TAG}" --title "${TAG}" --notes-file /tmp/release-body.md --verify-tag
         shell: bash

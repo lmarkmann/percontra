@@ -46,6 +46,7 @@
 		"zod": "^4.5.4"
 	},
 	"devDependencies": {
+		"@changesets/cli": "^3.0.1",
 		"@cloudflare/vite-plugin": "^1.54.3",
 		"@lhci/cli": "0.15.1",
 		"@playwright/test": "^1.62.1",
@@ -62,7 +63,6 @@
 		"@vitejs/plugin-react": "^6.1.1",
 		"@vitest/coverage-v8": "4.1.11",
 		"fake-indexeddb": "^6.2.5",
-		"git-cliff": "2.13.1",
 		"happy-dom": "^20.13.2",
 		"knip": "^6.34.0",
 		"msw": "^2.15.0",
@@ -147,7 +147,7 @@
 			"@sentry/react",
 			"@workos-inc/authkit-react",
 			"@fontsource-variable/inter",
-			"git-cliff"
+			"@changesets/cli"
 		]
 	}
 }

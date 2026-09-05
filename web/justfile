@@ -3,10 +3,6 @@
 
 set shell := ["bash", "-c"]
 
-# The changelog starts after this tag. Everything before it is recorded in
-# docs/synthesis/ and is deliberately not backfilled.
-changelog_baseline := "v0.0.0"
-
 _default:
 	@just --list --unsorted
 
@@ -73,24 +69,4 @@ size:
 knip:
 	pnpm knip
 
-# regenerate docs/CHANGELOG.md from the version tags (git-cliff)
-# oxfmt owns the file's whitespace, so normalize what git-cliff wrote.
-changelog:
-	pnpm exec git-cliff {{changelog_baseline}}.. --output docs/CHANGELOG.md
-	pnpm exec oxfmt --write docs/CHANGELOG.md
-
-# what the next release would say, printed rather than written
-unreleased:
-	pnpm exec git-cliff {{changelog_baseline}}.. --unreleased --bump
-
-# The headline becomes the tag message and the sentence after the date in the heading.
-# cut VERSION with HEADLINE: write the section, commit it, tag it. Pushing stays manual.
-release version headline:
-	git diff --cached --quiet || { echo 'staged changes present; commit or reset them first'; exit 1; }
-	pnpm pkg set version={{version}}
-	pnpm exec git-cliff {{changelog_baseline}}.. --tag v{{version}} --with-tag-message "{{headline}}" --output docs/CHANGELOG.md
-	pnpm exec oxfmt --write docs/CHANGELOG.md
-	git add package.json docs/CHANGELOG.md
-	git commit -m "chore(release): v{{version}}"
-	git tag -a v{{version}} -m "{{headline}}"
-	@echo 'tagged v{{version}}. Push it with: git push --follow-tags'
+# Releases are cut from the repo root: just changeset, just release.

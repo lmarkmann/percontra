@@ -32,7 +32,27 @@ ingest:
 		--gl '{{GL}}' --sample '{{SAMPLE}}' --reference '{{REFERENCE}}'
 
 test:
-	api/.venv/bin/pytest
+	uv run --directory api pytest
+
+contracts:
+	api/.venv/bin/python scripts/contracts.py
+
+contracts-check:
+	api/.venv/bin/python scripts/contracts.py --check
 
 deploy:
 	gcloud run deploy percontra --source . --project $PROJECT_ID --region europe-west2
+
+# Record a change for the next release (writes web/.changeset/<name>.md)
+changeset:
+	pnpm --dir web exec changeset
+
+# web/package.json is the one version source; api derives from it.
+# Apply pending changesets: bump the version, write web/CHANGELOG.md, commit, tag. Push stays manual.
+release:
+	git diff --quiet && git diff --cached --quiet || { echo 'working tree dirty; commit or stash first'; exit 1; }
+	pnpm --dir web exec changeset version
+	git add web/package.json web/CHANGELOG.md web/.changeset
+	git commit -m "chore(release): v$(jq -r .version web/package.json)"
+	pnpm --dir web exec changeset tag
+	@echo "tagged v$(jq -r .version web/package.json). Push with: git push --follow-tags"

@@ -14,6 +14,8 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 WORKDIR /srv
 RUN pip install uv
 COPY api/ ./api/
+# hatch reads the version from web/package.json (see api/pyproject.toml)
+COPY web/package.json ./web/package.json
 RUN uv sync --frozen --no-dev --directory api
 COPY --from=web /web/dist/client ./web/
 EXPOSE 8080
