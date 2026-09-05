@@ -44,7 +44,7 @@ Two file adapters are backed by dataset 02: its source GL and the Phase I loader
 | xlsx_investor_gl | verified | verified | not applicable | not applicable | partial |
 | csv_generic | verified | verified | not applicable | not applicable | partial |
 | xlsx_phase1_loader | partial | verified | partial | not applicable | partial |
-| erpnext | partial | partial | partial | unverified | unverified |
+| erpnext | partial | partial | partial | partial | partial |
 | entrilia | unverified | unverified | unverified | unverified | unverified |
 | intacct | unverified | unverified | unverified | unverified | unverified |
 | investran | unverified | unverified | unverified | unverified | unverified |
@@ -71,7 +71,7 @@ Stop the ordinary server first; both commands use port 8080. Live mode binds onl
 4. Confirm the company, then click **Post once and verify**.
 5. Open the ERPNext journal from its receipt. **Verify again** is read-back, not another posting.
 
-Current live check: the API still reports **GBP**, with zero journal and GL entries. The adapter correctly blocks posting. Company currency is not changed automatically; correcting its company/default-account setup is separate from creating migration accounts.
+Live GBP connectivity is verified: synthetic journal **ACC-JV-2026-00001** was submitted with GBP 1.00 per side and matching GL entries. Run `uv run --directory api percontra erpnext-smoke` to re-read its receipt. This is separate from dataset 02; the USD migration preflight still blocks posting to the GBP company. See [backend runbook](api/README.md).
 
 A saved draft is not posted. `verified` requires a submitted journal with matching lines, exchange rates and currencies, plus matching account-level GL totals. A timeout yields `unknown`; a recovered draft stays `draft_saved`. No automatic draft resubmission, cancellation, deletion or reposting.
 

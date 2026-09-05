@@ -1,12 +1,13 @@
 # ERPNext implementation plan
 
-Status: implementation in progress. Preserve concurrent changes and the JSON contracts.
+Status: backend implemented and live GBP connectivity verified. Frontend ownership is separate.
 
 ## Outcome
 
 Implement the real migration core, file adapters and a release-controlled ERPNext connection.
 Only https://percontra.l.frappe.cloud and Chalbury Co-Invest L.P. (CCI) may receive writes.
-Verify USD, fiscal year 2026 and company-scoped permissions before writing.
+Verify the explicitly selected posting currency, fiscal year 2026 and company scope before writing.
+Dataset 02 remains USD. The user authorised a separate synthetic GBP connectivity test.
 Credentials stay in the ignored root .env, never in logs, bundles or committed fixtures.
 
 Two demonstrations share the same core: Westvale and DJ3 supply the two documented
@@ -57,3 +58,12 @@ Verify a real submitted journal and its GL totals, then report the actual achiev
 ## Progress
 
 - Credentials excluded from Git and Docker contexts.
+- Generated contracts, file adapters, real crosswalk generation and append-only review/release history implemented.
+- Complete-batch export, retained artifact bytes, source/mapping/decision evidence and ten-field comparison implemented.
+- 152 real Chalbury rows match the selected reference fields and balance at USD 127.19 per side.
+- Both documented mapping gaps are retained. Unsupported DJ3 mappings still block release.
+- HTTP tests cover CSRF, decisions, approvals, export, evidence and dependency invalidation.
+- Submission tests cover double clicks, ambiguous responses, draft recovery, drift and original-run verification.
+- Live GBP check submitted ACC-JV-2026-00001 with GBP 1.00 per side; document and account-level GL read-back verified on 2026-09-05.
+- GBP uses separate synthetic inputs and storage, not a relabelled USD migration. The USD migration preflight still refuses the current GBP company.
+- Frontend contract and receipt-state handoff are documented in erpnext-integration.md. No further web/ edits are in this backend scope.
