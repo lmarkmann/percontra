@@ -25,12 +25,22 @@ test("the static home shell contains every inline home source string", () => {
 	}
 });
 
-test("the static theme toggle keeps a 44px hit area", () => {
+test("a static theme toggle, if present, keeps a 44px hit area", () => {
 	const html = readFileSync("index.html", "utf8");
 	const toggle = html.match(
 		/<button[\s\S]*?id="static-theme-toggle"[\s\S]*?>/,
 	)?.[0];
-	if (!toggle) throw new Error("Missing static theme toggle");
+	// The access-gate shell ships without one. The boot script guards for that
+	// (`if (!button) return`), so absence is a valid shell, not a failure.
+	if (!toggle) return;
 	expect(toggle).toContain("relative");
 	expect(toggle).toContain("after:size-11");
+});
+
+test("the theme boot script tolerates a shell with no toggle", () => {
+	const html = readFileSync("index.html", "utf8");
+	expect(html).toContain('getElementById("static-theme-toggle")');
+	expect(html).toMatch(
+		/getElementById\("static-theme-toggle"\);\s*if \(!button\) return;/,
+	);
 });
