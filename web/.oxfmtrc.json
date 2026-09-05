@@ -1,0 +1,78 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"useTabs": true,
+	"tabWidth": 2,
+	"printWidth": 80,
+	"singleQuote": false,
+	"jsxSingleQuote": false,
+	"quoteProps": "as-needed",
+	"trailingComma": "all",
+	"semi": true,
+	"arrowParens": "always",
+	"bracketSameLine": false,
+	"bracketSpacing": true,
+	"embeddedLanguageFormatting": "auto",
+	"proseWrap": "preserve",
+	"sortPackageJson": true,
+	"overrides": [
+		{
+			"files": ["*.yml", "*.yaml"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 2,
+				"proseWrap": "preserve"
+			}
+		},
+		{
+			"files": ["*.md", "*.mdx"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 2,
+				"proseWrap": "preserve"
+			}
+		},
+		{
+			"files": ["*.toml"],
+			"options": {
+				"useTabs": false,
+				"tabWidth": 2
+			}
+		}
+	],
+	"sortImports": {
+		"newlinesBetween": true,
+		"groups": [
+			"type",
+			["builtin", "external"],
+			"internal",
+			["parent", "sibling", "index"],
+			"style",
+			"unknown"
+		],
+		"customGroups": [
+			{
+				"groupName": "internal",
+				"elementNamePattern": ["^@/", "^@/.*"]
+			}
+		]
+	},
+	"sortTailwindcss": {
+		"stylesheet": "./src/index.css",
+		"functions": ["cn", "cva", "clsx", "tailwindMerge"],
+		"attributes": ["className"]
+	},
+	"ignorePatterns": [
+		"dist/**",
+		"src/routeTree.gen.ts",
+		"src/index.css",
+		"src/critical.css",
+		"src/styles/*.css",
+		"coverage/**",
+		".claude/**",
+		".agents/**",
+		".grok/**",
+		".tmp-*.mjs",
+		"prek.toml",
+		"pnpm-lock.yaml"
+	]
+}

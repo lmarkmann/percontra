@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+		/>
+		<meta
+			name="theme-color"
+			content="#f5f2ed"
+			media="(prefers-color-scheme: light)"
+		/>
+		<meta
+			name="theme-color"
+			content="#1a1a1a"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<!-- Home first paint: keep in sync with src/lib/seo.ts routeSeo.home + site.ts -->
+		<meta
+			name="description"
+			content="Per Contra: migration sign-off for fund accounting. Resolve the decisions behind each posting, approve them, and see what a mapping change invalidates."
+		/>
+		<meta name="robots" content="index,follow" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="Per Contra" />
+		<meta
+			property="og:description"
+			content="Per Contra: migration sign-off for fund accounting. Resolve the decisions behind each posting, approve them, and see what a mapping change invalidates."
+		/>
+		<meta property="og:image" content="/og-image.svg" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Per Contra" />
+		<meta
+			name="twitter:description"
+			content="Per Contra: migration sign-off for fund accounting. Resolve the decisions behind each posting, approve them, and see what a mapping change invalidates."
+		/>
+		<meta name="twitter:image" content="/og-image.svg" />
+		<title>Per Contra</title>
+		<script>
+			// Theme boot + static-shell toggle (before React). Keep in sync with
+			// src/lib/theme-cycle.ts and src/components/theme-provider.tsx.
+			(() => {
+				const STORAGE_KEY = "ui-theme";
+				const CYCLE = ["light", "dark", "system"];
+				const LABELS = {
+					light: "Light theme",
+					dark: "Dark theme",
+					system: "System theme",
+				};
+
+				function resolveClass(theme, prefersDark) {
+					if (theme === "system") return prefersDark ? "dark" : "light";
+					return theme;
+				}
+
+				const colorSchemeQuery = matchMedia("(prefers-color-scheme: dark)");
+
+				function applyTheme(theme) {
+					const root = document.documentElement;
+					root.classList.remove("light", "dark");
+					const resolved = resolveClass(theme, colorSchemeQuery.matches);
+					root.classList.add(resolved);
+					root.style.colorScheme = resolved;
+					// Approximate token surfaces for browser chrome (theme-color).
+					// System follows the OS via the media-gated metas; an explicit
+					// choice pins both to the resolved surface so the chrome matches
+					// even when the OS scheme disagrees.
+					const SURFACE = { light: "#f5f2ed", dark: "#1a1a1a" };
+					const metaLight = document.querySelector(
+						'meta[name="theme-color"][media*="light"]',
+					);
+					const metaDark = document.querySelector(
+						'meta[name="theme-color"][media*="dark"]',
+					);
+					if (metaLight) {
+						metaLight.setAttribute(
+							"content",
+							theme === "system" ? SURFACE.light : SURFACE[resolved],
+						);
+					}
+					if (metaDark) {
+						metaDark.setAttribute(
+							"content",
+							theme === "system" ? SURFACE.dark : SURFACE[resolved],
+						);
+					}
+				}
+
+				// React's ThemeProvider attaches the same listener after hydration; this one covers the static-shell period so the page reacts to OS theme changes before React boots. It is idempotent and bails out once the user leaves system mode, so it never fight the React provider.
+				colorSchemeQuery.addEventListener("change", () => {
+					if (readTheme() === "system") {
+						applyTheme("system");
+					}
+				});
+
+				function nextTheme(theme) {
+					const index = CYCLE.indexOf(theme);
+					return CYCLE[(index + 1) % CYCLE.length];
+				}
+
+				function readTheme() {
+					return localStorage.getItem(STORAGE_KEY) ?? "system";
+				}
+
+				function writeTheme(theme) {
+					localStorage.setItem(STORAGE_KEY, theme);
+				}
+
+				function iconMarkup(mode) {
+					if (mode === "light") {
+						return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+					}
+					if (mode === "dark") {
+						return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg>';
+					}
+					return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>';
+				}
+
+				function paintStaticToggle(button, theme) {
+					button.setAttribute("aria-label", LABELS[theme] ?? LABELS.system);
+					button.innerHTML = iconMarkup(theme);
+				}
+
+				let theme = readTheme();
+				applyTheme(theme);
+
+				document.addEventListener("DOMContentLoaded", () => {
+					const button = document.getElementById("static-theme-toggle");
+					if (!button) return;
+					paintStaticToggle(button, theme);
+					button.addEventListener("click", () => {
+						theme = nextTheme(theme);
+						writeTheme(theme);
+						applyTheme(theme);
+						paintStaticToggle(button, theme);
+					});
+				});
+			})();
+		</script>
+		<link rel="stylesheet" href="/src/critical.css" />
+	</head>
+	<body>
+		<!-- Static home shell: mirrors src/routes/index.tsx for fast LCP + early
+         navigation. Keep copy byte-identical to the React strings there
+         (the H1 carries a U+2011 non-breaking hyphen) or hydration flickers. -->
+		<div id="root">
+			<div data-static-shell class="min-h-svh bg-background">
+				<header
+					class="mx-auto flex w-full max-w-3xl items-center justify-between border-x border-border/70 px-6 py-8 safe-top"
+				>
+					<p
+						class="font-mono text-label font-medium tracking-label text-muted-foreground uppercase"
+					>
+						vite-template
+					</p>
+					<button
+						type="button"
+						id="static-theme-toggle"
+						class="duration-fast relative inline-flex icon-default size-8 shrink-0 items-center justify-center rounded-lg border invalid-ring focus-ring border-transparent bg-background bg-clip-padding text-caption leading-ui shadow-border transition-[background-color,border-color,color,box-shadow,transform,opacity] ease-out outline-none select-none after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-[''] hover:bg-muted hover:text-foreground hover:shadow-border-hover dark:bg-input/30 dark:hover:bg-input/50"
+						aria-label="System theme"
+					></button>
+				</header>
+				<main
+					id="main"
+					tabindex="-1"
+					class="mx-auto flex w-full max-w-3xl flex-col gap-10 border-x border-border/70 px-6 pb-24 outline-none safe-bottom"
+				>
+					<div class="flex flex-col gap-4">
+						<h1
+							class="text-display leading-display font-semibold text-pretty hyphens-none"
+						>
+							Start design‑forward. Stay lean.
+						</h1>
+						<p
+							class="max-w-prose font-prose text-title leading-body text-muted-foreground"
+						>
+							Inter for interface type, Charter for prose, a single verdigris
+							accent on primary actions. Explore the design system or sign in to
+							try protected routes.
+						</p>
+					</div>
+					<div class="flex flex-wrap gap-3">
+						<a
+							href="/showcase"
+							class="duration-fast inline-flex icon-default h-8 shrink-0 items-center justify-center rounded-lg border invalid-ring focus-ring border-transparent bg-primary bg-clip-padding px-2.5 text-caption leading-ui font-medium whitespace-nowrap text-primary-foreground transition-[background-color,border-color,color,box-shadow,transform,opacity] ease-out outline-none select-none hover:bg-primary-hover"
+						>
+							Design system showcase
+						</a>
+						<a
+							href="/login"
+							class="duration-fast inline-flex icon-default h-8 shrink-0 items-center justify-center rounded-lg border invalid-ring focus-ring border-transparent bg-background bg-clip-padding px-2.5 text-caption leading-ui font-medium whitespace-nowrap text-foreground shadow-border transition-[background-color,border-color,color,box-shadow,transform,opacity] ease-out outline-none select-none hover:bg-muted hover:text-foreground hover:shadow-border-hover dark:bg-input/30 dark:hover:bg-input/50"
+						>
+							Log in
+						</a>
+					</div>
+					<ul class="grid gap-3 border-t border-border pt-8 sm:grid-cols-2">
+						<li
+							class="flex items-baseline justify-between gap-3 rounded-xl px-4 py-3 shadow-border"
+						>
+							<span class="text-label text-muted-foreground">Interface</span>
+							<span class="text-caption font-medium">Inter</span>
+						</li>
+						<li
+							class="flex items-baseline justify-between gap-3 rounded-xl px-4 py-3 shadow-border"
+						>
+							<span class="text-label text-muted-foreground">Prose</span>
+							<span class="text-caption font-medium">Charter</span>
+						</li>
+						<li
+							class="flex items-baseline justify-between gap-3 rounded-xl px-4 py-3 shadow-border"
+						>
+							<span class="text-label text-muted-foreground">Accent</span>
+							<span class="text-caption font-medium">Verdigris</span>
+						</li>
+						<li
+							class="flex items-baseline justify-between gap-3 rounded-xl px-4 py-3 shadow-border"
+						>
+							<span class="text-label text-muted-foreground">Routing</span>
+							<span class="text-caption font-medium">TanStack</span>
+						</li>
+					</ul>
+
+					<p class="font-mono text-label text-muted-foreground">
+						Vite, React, Tailwind, shadcn
+					</p>
+				</main>
+			</div>
+		</div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>

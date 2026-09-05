@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#f5f2ed"/>
+  <rect x="0" y="0" width="12" height="630" fill="#33644d"/>
+  <text
+    x="80"
+    y="280"
+    fill="#393a34"
+    font-family="ui-sans-serif, system-ui, sans-serif"
+    font-size="72"
+    font-weight="600"
+  >vite-template</text>
+  <text
+    x="80"
+    y="360"
+    fill="#58574e"
+    font-family="ui-sans-serif, system-ui, sans-serif"
+    font-size="36"
+  >Start design-forward, stay lean</text>
+  <rect x="80" y="420" width="120" height="8" rx="4" fill="#33644d"/>
+</svg>

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percontra.dev/contracts/decision.schema.json",
+  "title": "PerContra decision and release contract v1",
+  "description": "Append-only records. A decision is a human answer to a mapping gap; each edit is a new version, never an overwrite. A release is an approval of one batch bound to the exact decision versions and mapping snapshot it was checked against.",
+  "$defs": {
+    "Decision": {
+      "type": "object",
+      "required": ["decision_id", "version", "gap", "target", "author", "reason", "decided_at", "supersedes"],
+      "properties": {
+        "decision_id": { "type": "string", "description": "Stable per gap: sha256 over (source gl_account, source trans_type, GL file_digest)." },
+        "version":     { "type": "integer", "minimum": 1 },
+        "gap": {
+          "type": "object",
+          "description": "The unresolved source pair this decision answers, as in the Mapping Gaps sheet.",
+          "required": ["source_gl_account", "source_trans_type", "affected_source_refs"],
+          "properties": {
+            "source_gl_account":    { "type": "string" },
+            "source_trans_type":    { "type": "string" },
+            "proposed_target":      { "type": ["object", "null"], "description": "What the workbook proposed, if anything. Shown as a suggestion, never applied silently." },
+            "affected_source_refs": { "type": "array", "minItems": 1, "items": { "$ref": "posting.schema.json#/$defs/SourceRef" } }
+          },
+          "additionalProperties": false
+        },
+        "target": {
+          "type": "object",
+          "required": ["gl_account", "trans_type", "corvus_ref"],
+          "properties": {
+            "gl_account": { "type": "string" },
+            "trans_type": { "type": "string" },
+            "corvus_ref": { "$ref": "posting.schema.json#/$defs/SourceRef", "description": "The Corvus CoA row proving the target exists." }
+          },
+          "additionalProperties": false
+        },
+        "author":     { "type": "string", "description": "Named person acting in the accountant role. The demo reviewer is labelled as such, never as the original administrator." },
+        "reason":     { "type": "string", "minLength": 1 },
+        "decided_at": { "type": "string", "format": "date-time" },
+        "supersedes": { "type": ["integer", "null"], "description": "Previous version number, null for version 1. Reverting to an old target creates a new version; it never resurrects an old approval." }
+      },
+      "additionalProperties": false
+    },
+
+    "Release": {
+      "type": "object",
+      "required": ["release_id", "batch_key", "state", "bound_decisions", "mapping_snapshot_digest", "posting_ids", "approved_by", "approved_at", "state_changed_at", "state_reason"],
+      "properties": {
+        "release_id":  { "type": "string" },
+        "batch_key":   { "$ref": "posting.schema.json#/properties/batch_key" },
+        "state":       { "type": "string", "enum": ["draft", "approved", "stale", "revoked"],
+                         "description": "draft: has needs_decision or blocked postings. approved: may be exported as approved. stale: a bound decision has a newer version; export as approved is refused. revoked: a human withdrew it." },
+        "bound_decisions":         { "type": "array", "items": { "$ref": "posting.schema.json#/$defs/DecisionRef" } },
+        "mapping_snapshot_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 over all MappingRefs in the batch, so a changed crosswalk upload also stales the release." },
+        "posting_ids":             { "type": "array", "items": { "type": "string" } },
+        "approved_by":             { "type": ["string", "null"] },
+        "approved_at":             { "type": ["string", "null"], "format": "date-time" },
+        "state_changed_at":        { "type": "string", "format": "date-time" },
+        "state_reason":            { "type": "string", "description": "e.g. 'decision 3f9c… moved from v1 to v2'." }
+      },
+      "additionalProperties": false
+    },
+
+    "Export": {
+      "type": "object",
+      "description": "A generated loader file. Labelled by what it is, never by what happened next: 'Exported; destination not checked'.",
+      "required": ["export_id", "created_at", "scope", "batch_keys", "release_states_at_export", "file_digest", "label"],
+      "properties": {
+        "export_id":  { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "scope":      { "type": "string", "enum": ["approved_only", "review_draft"] },
+        "batch_keys": { "type": "array", "items": { "$ref": "posting.schema.json#/properties/batch_key" } },
+        "release_states_at_export": { "type": "object", "additionalProperties": { "type": "string" } },
+        "file_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "label":       { "const": "Exported; destination not checked" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

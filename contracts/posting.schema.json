@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percontra.dev/contracts/posting.schema.json",
+  "title": "PerContra posting contract v1",
+  "description": "One candidate destination row (a posting) with every pointer needed to explain it: where it came from, which mapping rows and versions produced it, which recorded decisions it depends on, and whether it may leave. Both the Python api and the TypeScript web derive their types from this file. Change it only by agreement; bump version.",
+  "$defs": {
+
+    "SourceRef": {
+      "type": "object",
+      "description": "A physical cell-row in an uploaded workbook. The evidence pointer. file_digest is sha256 of the uploaded bytes so a re-upload of a changed file is a different source.",
+      "required": ["file_digest", "file_name", "sheet", "physical_row"],
+      "properties": {
+        "file_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "file_name":   { "type": "string" },
+        "sheet":       { "type": "string" },
+        "physical_row":{ "type": "integer", "minimum": 2, "description": "1-based Excel row as displayed; row 1 is the header." }
+      },
+      "additionalProperties": false
+    },
+
+    "SourceIdentity": {
+      "type": "object",
+      "description": "The fields from the source GL that together name an allocation occurrence. NOT unique (60 duplicate occurrences exist); occurrence_index disambiguates within a duplicate group and duplicates are compared as multisets.",
+      "required": ["legal_entity", "vehicle", "batch_id", "je_index", "transaction_index", "rfx_id", "occurrence_index"],
+      "properties": {
+        "legal_entity":      { "type": "string" },
+        "vehicle":           { "type": "string" },
+        "batch_id":          { "type": "string" },
+        "je_index":          { "type": "string" },
+        "transaction_index": { "type": "string" },
+        "rfx_id":            { "type": "string", "description": "Source investor external ref; bridges to Investor Mapping 'Specific External Ref 1'." },
+        "occurrence_index":  { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+
+    "MappingRef": {
+      "type": "object",
+      "description": "One crosswalk row that was applied. version increments when the row's content changes in a later upload of the mapping workbook; v1 imports are version 1 and read-only.",
+      "required": ["table", "source", "version"],
+      "properties": {
+        "table":   { "type": "string", "enum": ["LE", "CoA", "Investor", "Deal", "BatchPreference", "CorvusCoA"] },
+        "source":  { "$ref": "#/$defs/SourceRef" },
+        "version": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "DecisionRef": {
+      "type": "object",
+      "description": "Pointer to a specific version of a recorded human decision (see decision.schema section). Approval binds to these; a newer version makes dependents stale.",
+      "required": ["decision_id", "version"],
+      "properties": {
+        "decision_id": { "type": "string" },
+        "version":     { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "Money": {
+      "type": "object",
+      "description": "Decimal as string to avoid float drift; compared at currency precision, never via a global net.",
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount":   { "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$" },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+      },
+      "additionalProperties": false
+    },
+
+    "Destination": {
+      "type": "object",
+      "description": "The loader columns, typed. Field names follow the Phase I loader header. Nullable where the loader allows blanks. IDs are target-system integers as strings.",
+      "required": ["legal_entity", "legal_entity_id", "gl_date", "effective_date", "trans_type", "transaction_currency", "investor_amount_local", "is_debit", "investor_amount_le", "batch_type", "allocation_rule", "investor_account_id", "vehicle"],
+      "properties": {
+        "legal_entity":          { "type": "string" },
+        "legal_entity_id":       { "type": "string" },
+        "gl_date":               { "type": "string", "format": "date" },
+        "effective_date":        { "type": "string", "format": "date" },
+        "deal_name":             { "type": ["string", "null"] },
+        "deal_id":               { "type": ["string", "null"] },
+        "position":              { "type": ["string", "null"] },
+        "position_id":           { "type": ["string", "null"] },
+        "trans_type":            { "type": "string", "description": "Target chart-of-accounts transaction type label, exactly as in Corvus CoA (including its own spellings)." },
+        "transaction_currency":  { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "investor_amount_local": { "$ref": "#/$defs/Money" },
+        "is_debit":              { "type": "boolean" },
+        "investor_amount_le":    { "$ref": "#/$defs/Money" },
+        "batch_type":            { "type": "string" },
+        "batch_comments":        { "type": ["string", "null"] },
+        "transaction_comments":  { "type": ["string", "null"] },
+        "allocation_rule":       { "type": "string" },
+        "investor_account_id":   { "type": "string" },
+        "vehicle":               { "type": "string" },
+        "bank_account":          { "type": ["string", "null"] },
+        "udf_lookup":            { "type": ["string", "null"] },
+        "udf_text":              { "type": ["string", "null"] },
+        "supplier":              { "type": ["string", "null"] },
+        "investor_quantity":     { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+
+    "Warning": {
+      "type": "object",
+      "description": "Non-blocking check result kept visible on the row (e.g. investor name differs from mapping name while ID is unambiguous).",
+      "required": ["code", "message"],
+      "properties": {
+        "code":    { "type": "string" },
+        "message": { "type": "string" },
+        "refs":    { "type": "array", "items": { "$ref": "#/$defs/SourceRef" } }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "type": "object",
+  "required": ["contract_version", "posting_id", "batch_key", "source_refs", "source_identity", "mappings_used", "decisions_used", "status", "destination", "warnings"],
+  "properties": {
+    "contract_version": { "const": 1 },
+
+    "posting_id": {
+      "type": "string",
+      "description": "Deterministic: sha256 over (file_digest of GL, source_identity fields, target investor_account_id). Stable across regenerations so approvals and UI selection survive a rerun."
+    },
+
+    "batch_key": {
+      "type": "object",
+      "description": "Unit of release. Approval and staleness are per batch, never per debit/credit leg.",
+      "required": ["legal_entity", "source_batch_id"],
+      "properties": {
+        "legal_entity":    { "type": "string" },
+        "source_batch_id": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/SourceRef" },
+      "description": "Every GL row that contributed. Usually one. Identical occurrences that cannot be told apart are listed together and the UI shows the whole group."
+    },
+
+    "source_identity": { "$ref": "#/$defs/SourceIdentity" },
+
+    "mappings_used": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/MappingRef" },
+      "description": "All crosswalk rows applied, including repeated rows that resolve to the same target (kept, not deduplicated)."
+    },
+
+    "decisions_used": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/DecisionRef" },
+      "description": "Recorded decisions this posting depends on. Empty when no gap applies."
+    },
+
+    "status": {
+      "type": "string",
+      "enum": ["ready", "needs_decision", "blocked", "stale"],
+      "description": "ready: fully mapped, batch may be approved. needs_decision: depends on a Mapping Gap with no recorded decision. blocked: conflicting or unsupported mapping; shown, never defaulted. stale: was under an approval whose bound decision version has since changed."
+    },
+
+    "block_reason": {
+      "type": ["string", "null"],
+      "description": "Required when status is needs_decision or blocked; names the gap or the conflict. Null otherwise."
+    },
+
+    "destination": {
+      "oneOf": [
+        { "$ref": "#/$defs/Destination" },
+        { "type": "null" }
+      ],
+      "description": "Null while needs_decision or blocked; the row is not yet a posting."
+    },
+
+    "warnings": { "type": "array", "items": { "$ref": "#/$defs/Warning" } }
+  },
+  "additionalProperties": false
+}

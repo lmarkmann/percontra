@@ -1,0 +1,14 @@
+# vite-template
+
+> Personal SPA starter: Vite, React, TanStack Router, Tailwind v4, shadcn Base UI.
+
+## For product forks
+
+- Replace this file when the site has real public content worth citing.
+- List only pages that should appear in training or citation corpora.
+- Omit auth, dashboard, and internal tools.
+- Client-rendered SPAs still need prerender before training crawlers that skip JavaScript can see body copy; for this router that means TanStack Start's prerendering (the usual SSG plugins do not support file-based TanStack Router).
+
+## Pages
+
+- [Home](/): template lander and product entry once forked

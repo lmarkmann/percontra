@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="robots" content="noindex" />
+		<title>404 Page not found</title>
+		<style>
+			/* Mirrored from src/styles/theme-tokens.css; theme-fallback.test.ts guards drift. */
+			:root {
+				color-scheme: light dark;
+				--fg: oklch(0.345 0.01 114.619);
+				--muted: oklch(0.455 0.014 101.768);
+				--bg: oklch(0.962 0.007 80.721);
+				--link: oklch(0.462 0.066 161.913);
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--fg: oklch(0.82 0.017 91.58);
+					--muted: oklch(0.645 0.001 17.191);
+					--bg: oklch(0.218 0 89.876);
+					--link: oklch(0.642 0.09 162.906);
+				}
+			}
+			body {
+				margin: 0;
+				min-height: 100dvh;
+				display: grid;
+				place-items: center;
+				background: var(--bg);
+				color: var(--fg);
+				font-family: system-ui, sans-serif;
+				font-size: 1rem;
+				line-height: 1.6;
+			}
+			main {
+				text-align: center;
+			}
+			h1 {
+				font-size: 1.5rem;
+				font-weight: 600;
+				line-height: 1.15;
+				letter-spacing: -0.02em;
+				margin: 0 0 0.5rem;
+			}
+			p {
+				color: var(--muted);
+				font-size: 0.875rem;
+				margin: 0 0 1.5rem;
+			}
+			a {
+				color: var(--link);
+				font-size: 0.875rem;
+				text-decoration: underline;
+				text-underline-offset: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>404</h1>
+			<p>This page does not exist.</p>
+			<a href="/">Back to start</a>
+		</main>
+	</body>
+</html>

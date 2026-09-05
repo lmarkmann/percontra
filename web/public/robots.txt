@@ -1,0 +1,25 @@
+# Allow all crawlers unless you add project-specific disallows below.
+# Training bots that do not run JavaScript will not see a client-rendered SPA without SSG.
+# Covered by the single group below: search/citation bots (OAI-SearchBot,
+# Claude-SearchBot, PerplexityBot, Googlebot, Bingbot/Copilot), on-demand fetchers
+# (ChatGPT-User, Claude-User, Perplexity-User), and training crawlers (GPTBot,
+# ClaudeBot, CCBot/Common Crawl, meta-externalagent, Amazonbot, Bytespider).
+# Google-Extended and Applebot-Extended are consent tokens, not crawlers; absent
+# rules mean allowed, which is intended.
+#
+# Keep this a SINGLE group. RFC 9309: a crawler obeys only its most specific
+# matching group, so a named per-bot group would stop inheriting disallows added
+# under *. Rules here apply to every crawler, AI and classic alike.
+#
+# Prefer per-route meta robots (src/lib/seo.ts) for SPA noindex (showcase, login,
+# dashboard). Use Disallow only for hard path blocks after you know the IA.
+
+User-agent: *
+Allow: /
+# Per project: optional hard blocks (meta noindex already covers template demos):
+# Disallow: /login
+# Disallow: /dashboard
+
+# When VITE_APP_URL is set at build, emit-sitemap writes dist/sitemap.xml.
+# Point crawlers at it after deploy, e.g.:
+# Sitemap: https://example.com/sitemap.xml

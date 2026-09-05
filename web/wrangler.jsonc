@@ -1,0 +1,27 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vite-template",
+	// Bump when you adopt new Workers runtime features; set to the day you ship the change.
+	"compatibility_date": "2026-07-09",
+	// Worker + SPA assets; full deploy architecture: docs/reference/architecture.md. Local traps:
+	// run_worker_first needs both "/api" and "/api/*" (the glob alone misses the exact path);
+	// `assets.directory` is intentionally omitted (the Cloudflare vite plugin fills it into the
+	// generated wrangler.json at build); the ASSETS binding exists because Cloudflare applies the
+	// SPA fallback only to Sec-Fetch-Mode: navigate, so the Worker's notFound must proxy curl/bot
+	// deep links back to the shell.
+	"main": "server/index.ts",
+	"observability": {
+		"enabled": true,
+	},
+	// Not a secret: same value as the client's VITE_WORKOS_CLIENT_ID. Local dev
+	// override lives in a gitignored .dev.vars file. Empty = auth not configured:
+	// /api/session answers 501 and /api/dashboard serves demo fixtures unguarded.
+	"vars": {
+		"WORKOS_CLIENT_ID": "",
+	},
+	"assets": {
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": ["/api", "/api/*"],
+	},
+}

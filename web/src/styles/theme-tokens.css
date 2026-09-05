@@ -1,0 +1,367 @@
+@custom-variant dark (&:where(.dark, .dark *));
+/* Fine pointer only: avoids sticky hover on touch after tap (polish checklist). */
+@custom-variant hover-fine (@media (hover: hover) and (pointer: fine));
+
+/* Metric-matched fallback faces so text set in the system font wraps where the
+   web font will (no reflow when Inter/Charter arrive). Values computed with
+   fontaine's formula from @capsizecss/metrics 4.1.0 (Arial, Georgia, Inter)
+   and the local charter_regular.woff2; Inter-over-Arial agrees with the
+   published fontaine/next-font output (107.4% / 90.2% / 22.48%) within the
+   metrics sample drift. Lives here (not the font CSS files) so critical.css
+   inlines the fallbacks for the static shell. */
+@font-face {
+	font-family: "Inter Fallback";
+	src: local("Arial");
+	size-adjust: 107.12%;
+	ascent-override: 90.44%;
+	descent-override: 22.52%;
+	line-gap-override: 0%;
+}
+
+@font-face {
+	font-family: "Charter Fallback";
+	src: local("Georgia");
+	size-adjust: 99.37%;
+	ascent-override: 98.62%;
+	descent-override: 23.75%;
+	line-gap-override: 0%;
+}
+
+@theme inline {
+	/* Inter = UI + headings. Charter = prose only (`font-prose`); faces in charter-font.css. */
+	--font-heading: var(--font-sans);
+	--font-sans: "Inter Variable", "Inter Fallback", sans-serif;
+	--font-serif:
+		Charter, "Charter Fallback", "Bitstream Charter", "Sitka Text", "Iowan Old Style", Georgia,
+		"Times New Roman", serif;
+	--font-prose: var(--font-serif);
+	--font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+	/* Semantic type scale (UI-first). Display fluid-scales for hero; rest fixed.
+	   Intermediate anchors 18 / 20 / 30 for third hierarchy levels. */
+	--text-display: clamp(2.5rem, 4.2vw + 1.2rem, 3.75rem);
+	--text-heading: 1.875rem; /* 30px */
+	--text-title: 1.5rem; /* 24px */
+	--text-lead: 1.25rem; /* 20px */
+	--text-subtitle: 1.125rem; /* 18px */
+	--text-body: 1rem; /* 16px */
+	--text-caption: 0.875rem; /* 14px */
+	--text-label: 0.75rem; /* 12px */
+	--leading-heading: 1.15;
+	--leading-lead: 1.4;
+	--leading-subtitle: 1.35;
+	--leading-display: 1.05;
+	--leading-title: 1.15;
+	--leading-body: 1.6;
+	--leading-ui: 1.25;
+	/* Tracking: tight at 24px+, tighter at display 40px+; wider only on uppercase labels. */
+	--tracking-display: -0.04em;
+	--tracking-title: -0.02em;
+	--tracking-label: 0.06em;
+	/* Spacing is Tailwind's numeric scale (--spacing, p-2/p-4/p-6), which is 8pt
+	   with a 4px half-step. --space-* is not a namespace and generated nothing;
+	   named steps go below as --spacing-*, same trap as --z-* vs --z-index-*. */
+	--shadow-border:
+		0 0 0 1px oklch(0 0 0 / 0.06), 0 1px 2px -1px oklch(0 0 0 / 0.06),
+		0 2px 4px 0 oklch(0 0 0 / 0.04);
+	--shadow-border-hover:
+		0 0 0 1px oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.08),
+		0 2px 4px 0 oklch(0 0 0 / 0.06);
+	--shadow-destructive-ring: 0 0 0 1px var(--destructive);
+	--shadow-elevated: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.08);
+	--shadow-floating: 0 2px 8px oklch(0 0 0 / 0.06), 0 16px 40px oklch(0 0 0 / 0.1);
+	--height-chat-panel: 35rem;
+	--max-width-bubble: 80%;
+	--ring-width: 3px;
+	--spacing-control-x: 0.625rem;
+	--spacing-message-meta: 0.75rem;
+	--spacing-bubble-x: 0.75rem;
+	--spacing-bubble-y: 0.5rem;
+	--spacing-message-inner: 0.5rem;
+	--spacing-message-group: 1.5rem;
+	--radius-inner-sm: calc(var(--radius) - 3px);
+	--radius-inner-md: calc(var(--radius) - 2px);
+	--radius-inner-lg: calc(var(--radius) - 5px);
+	--radius-capped-sm: min(var(--radius-md), 10px);
+	--radius-capped-md: min(var(--radius-md), 12px);
+	--radius-attachment: calc(var(--radius-xl) - 0.5rem);
+	--radius-attachment-sm: calc(var(--radius-xl) - 0.375rem);
+	--radius-attachment-xs: calc(var(--radius-lg) - 0.25rem);
+	--size-attachment-media: 2.5rem;
+	--size-attachment-media-sm: 2rem;
+	--size-attachment-media-xs: 1.75rem;
+	--color-surface-tinted: var(--surface-tinted);
+	--color-surface-tinted-hover: var(--surface-tinted-hover);
+	--color-secondary-hover: var(--secondary-hover);
+	--color-muted-hover: var(--muted-hover);
+	/* Motion scale (skill-canonical). Prefer --motion-* in new CSS; --duration-*
+	   aliases feed Tailwind utilities (duration-fast, duration-base, ...). */
+	--motion-fast: 120ms;
+	--motion-base: 200ms;
+	--motion-medium: 280ms;
+	--motion-slow: 400ms;
+	--motion-slower: 600ms;
+	--duration-fast: var(--motion-fast);
+	--duration-base: var(--motion-base);
+	--duration-normal: var(--motion-base);
+	--duration-medium: var(--motion-medium);
+	--duration-slow: var(--motion-slow);
+	--duration-slower: var(--motion-slower);
+	/* Default UI easing is ease-out (decelerates into rest). emphasized is
+	   reserved for at most one hero element per viewport. */
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-enter: var(--ease-out);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+	--ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+	--ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+	/* Continuous decorative rotation (orbit-badge text ring); the global
+	   reduced-motion floor freezes it, which is the intended fallback. */
+	--animate-spin-slow: spin-slow 45s linear infinite;
+	@keyframes spin-slow {
+		to {
+			transform: rotate(1turn);
+		}
+	}
+	/* Semantic z stack (project values; keep ordered, never raw z-50 in components).
+	   Namespace is --z-index-* so Tailwind v4 emits the z-* utilities; --z-* is a no-op. */
+	--z-index-base: 0;
+	--z-index-raised: 1;
+	--z-index-sticky: 40;
+	--z-index-dropdown: 50;
+	--z-index-modal: 100;
+	--z-index-toast: 200;
+	--z-index-tooltip: 250;
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-hover: var(--primary-hover);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	/* Primitive ramps. Every step is a value Patina ships; the semantic tokens
+	   below reference them rather than re-typing the triple. Prefer the semantic
+	   token in UI: these exist so a fork can retint from one place. */
+	--color-gray-50: var(--gray-50);
+	--color-gray-100: var(--gray-100);
+	--color-gray-200: var(--gray-200);
+	--color-gray-300: var(--gray-300);
+	--color-gray-400: var(--gray-400);
+	--color-gray-500: var(--gray-500);
+	--color-gray-600: var(--gray-600);
+	--color-gray-700: var(--gray-700);
+	--color-gray-800: var(--gray-800);
+	--color-gray-900: var(--gray-900);
+	--color-gray-950: var(--gray-950);
+	--color-brand-400: var(--brand-400);
+	--color-brand-500: var(--brand-500);
+	--color-brand-600: var(--brand-600);
+	--color-brand-700: var(--brand-700);
+	--color-brand-800: var(--brand-800);
+	--color-brand-900: var(--brand-900);
+	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-md: calc(var(--radius) * 0.8);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-4xl: calc(var(--radius) * 2.6);
+	/* Optional continuous corner (Safari-led); not the default radius. */
+	--radius-superellipse: 1.25rem;
+}
+
+:root {
+	color-scheme: light dark;
+	/* Neutral ramp: the Patina ground scale, light end from Patina Stellar,
+	   dark end from Patina Dark Soft. Warm-tinted where Patina is warm and
+	   achromatic where Patina is achromatic, so there is no single hue knob;
+	   a fork retints by regenerating, not by editing one number. Sources:
+	   ~/Documents/.parked/Themes/patina-theme/palette/*.toml */
+	--gray-50: oklch(0.962 0.007 80.721);
+	--gray-100: oklch(0.928 0.01 87.473);
+	--gray-200: oklch(0.864 0.01 87.478);
+	--gray-300: oklch(0.824 0.01 87.481);
+	--gray-400: oklch(0.748 0.01 87.488);
+	--gray-500: oklch(0.645 0.001 17.191);
+	--gray-600: oklch(0.517 0 89.876);
+	--gray-700: oklch(0.455 0.014 101.768);
+	--gray-800: oklch(0.345 0.01 114.619);
+	--gray-900: oklch(0.252 0 89.876);
+	--gray-950: oklch(0.218 0 89.876);
+	/* Verdigris ramp, hue 161-167. Not generated: every step is the accent or
+	   accent-hover of a shipped Patina variant, so the scale is the theme's own
+	   rather than an even interpolation through colors it never had.
+	   900 Light dim_green, 800 Light accent, 700 Stellar accent,
+	   600 Dark Soft accent, 500 Dark Soft accent_hover, 400 Moss accent_hover. */
+	--brand-400: oklch(0.696 0.089 167.436);
+	--brand-500: oklch(0.642 0.09 162.906);
+	--brand-600: oklch(0.601 0.081 163.407);
+	--brand-700: oklch(0.531 0.078 161.893);
+	--brand-800: oklch(0.462 0.066 161.913);
+	--brand-900: oklch(0.376 0.052 160.647);
+	/* Standalone fallback mirror: public/404.html maps background -> --bg,
+	   foreground -> --fg, muted-foreground -> --muted, and primary -> --link,
+	   and index.html's theme-color metas mirror --background as hex.
+	   Keep these canonical here; theme-fallback.test.ts catches any drift. */
+	--background: var(--gray-50);
+	--foreground: var(--gray-800);
+	--card: var(--gray-100);
+	--card-foreground: var(--gray-800);
+	--popover: var(--gray-50);
+	--popover-foreground: var(--gray-800);
+	--primary: var(--brand-800);
+	--primary-foreground: var(--gray-50);
+	/* Hover darkens rather than fading toward the background: an alpha fade
+	   lowers contrast on the very interaction that should raise it. */
+	--primary-hover: var(--brand-900);
+	--secondary: var(--gray-100);
+	--secondary-foreground: var(--gray-800);
+	--muted: var(--gray-100);
+	--muted-foreground: var(--gray-700);
+	--accent: var(--gray-100);
+	--accent-foreground: var(--gray-800);
+	/* Status hues are Patina's. Lightness is set by the worst surface the token
+	   renders on (--card, not --background), which is why warning sits 0.01
+	   below Patina's editor value; an editor never puts it on a raised card. */
+	--destructive: oklch(0.486 0.147 24.404);
+	--destructive-foreground: var(--gray-50);
+	--success: oklch(0.404 0.098 135.583);
+	--success-foreground: var(--gray-50);
+	--warning: oklch(0.51 0.092 95.545);
+	--warning-foreground: var(--gray-50);
+	--info: oklch(0.466 0.052 217.424);
+	--info-foreground: var(--gray-50);
+	--border: var(--gray-200);
+	--input: var(--gray-200);
+	--ring: var(--brand-800);
+	--radius: 0.625rem;
+	--secondary-hover: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
+	--muted-hover: color-mix(in oklch, var(--muted), var(--foreground) 5%);
+	--surface-tinted: oklch(from var(--primary) 0.93 calc(c * 0.4) h);
+	--surface-tinted-hover: oklch(from var(--primary) 0.88 calc(c * 0.5) h);
+}
+
+.dark {
+	/* Patina Dark Soft. The grounds are genuinely achromatic (C = 0); the warmth
+	   in this variant comes from the ink, not the surface. The dark values for
+	   the standalone public/404.html mirror are guarded by theme-fallback.test.ts
+	   alongside the light values above. */
+	--background: var(--gray-950);
+	--foreground: oklch(0.82 0.017 91.58);
+	--card: var(--gray-900);
+	--card-foreground: oklch(0.82 0.017 91.58);
+	--popover: var(--gray-900);
+	--popover-foreground: oklch(0.82 0.017 91.58);
+	/* Dark Soft's own accent is --brand-600, which measures 4.22:1 as text on
+	   --card and misses AA. --brand-500 is Dark Soft's accent_hover, the next
+	   value Patina actually ships, and it clears at 4.98:1. */
+	--primary: var(--brand-500);
+	--primary-foreground: var(--gray-950);
+	--primary-hover: var(--brand-400);
+	--secondary: var(--gray-900);
+	--secondary-foreground: oklch(0.82 0.017 91.58);
+	--muted: var(--gray-900);
+	--muted-foreground: var(--gray-500);
+	--accent: var(--gray-900);
+	--accent-foreground: oklch(0.82 0.017 91.58);
+	--destructive: oklch(0.65 0.161 15.938);
+	--destructive-foreground: var(--gray-950);
+	--success: oklch(0.72 0.091 128.856);
+	--success-foreground: var(--gray-950);
+	--warning: oklch(0.805 0.104 95.243);
+	--warning-foreground: var(--gray-950);
+	--info: oklch(0.692 0.071 211.343);
+	--info-foreground: var(--gray-950);
+	--border: oklch(0.321 0 89.876);
+	--input: oklch(0.36 0 89.876);
+	--ring: var(--brand-500);
+	--shadow-border:
+		0 0 0 1px oklch(1 0 0 / 0.08), 0 1px 2px -1px oklch(1 0 0 / 0.08),
+		0 2px 4px 0 oklch(1 0 0 / 0.06);
+	--shadow-border-hover:
+		0 0 0 1px oklch(1 0 0 / 0.13), 0 1px 2px -1px oklch(1 0 0 / 0.13),
+		0 2px 4px 0 oklch(1 0 0 / 0.08);
+	--secondary-hover: color-mix(in oklch, var(--secondary), var(--foreground) 5%);
+	--muted-hover: color-mix(in oklch, var(--muted), var(--foreground) 5%);
+	/* Tint stays a whisper of primary on dark; high L + low C avoids muddy blocks. */
+	--surface-tinted: oklch(from var(--primary) 0.24 calc(c * 0.18) h);
+	--surface-tinted-hover: oklch(from var(--primary) 0.28 calc(c * 0.22) h);
+	--shadow-elevated: 0 0 0 1px oklch(1 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.28);
+	--shadow-floating: 0 0 0 1px oklch(1 0 0 / 0.08), 0 16px 40px oklch(0 0 0 / 0.36);
+}
+
+/*
+ * The third and fourth modes this system has to survive. Both are override
+ * layers on the semantic keys above, not additional palettes: only roles whose
+ * value actually changes appear. `:root, .dark` rather than `:root` alone
+ * because the two have equal specificity and this has to beat both.
+ */
+
+/* The OS substitutes its own palette, so every role collapses onto a system
+   keyword and the surface hierarchy flattens by design; depth in this mode is
+   a boundary, which utilities.css supplies. GrayText is deliberately absent:
+   it means disabled, and using it for merely de-emphasized text tells a screen
+   reader user the control is dead. */
+@media (forced-colors: active) {
+	:root,
+	.dark {
+		--background: Canvas;
+		--card: Canvas;
+		--popover: Canvas;
+		--muted: Canvas;
+		--secondary: Canvas;
+		--accent: Canvas;
+		--surface-tinted: Canvas;
+		--surface-tinted-hover: Canvas;
+		--foreground: CanvasText;
+		--card-foreground: CanvasText;
+		--popover-foreground: CanvasText;
+		--muted-foreground: CanvasText;
+		--secondary-foreground: CanvasText;
+		--accent-foreground: CanvasText;
+		--primary: ButtonFace;
+		--primary-hover: ButtonFace;
+		--primary-foreground: ButtonText;
+		--border: CanvasText;
+		--input: CanvasText;
+		--ring: Highlight;
+	}
+}
+
+/* The palette survives here; the roles just move to 7:1 body and 3:1 non-text.
+   Scope is text and boundaries. The accent is deliberately not raised: pushing
+   --primary to --brand-900 for 7:1 leaves --primary-hover with no darker step,
+   so hover would stop signalling, and a hover that cannot be seen is the worse
+   failure. Values measured with calc.py; see docs/frontend/color-report.md. */
+@media (prefers-contrast: more) {
+	:root {
+		/* --gray-800 is --foreground, so de-emphasis collapses. That is the
+		   correct reading of the request, and the ramp has no step between. */
+		--muted-foreground: var(--gray-800);
+		--border: var(--gray-600);
+		--input: var(--gray-600);
+	}
+
+	.dark {
+		--muted-foreground: var(--gray-400);
+		--border: var(--gray-600);
+		--input: var(--gray-600);
+	}
+}

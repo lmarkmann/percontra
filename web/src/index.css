@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./styles/inter-font.css";
+@import "./styles/charter-font.css";
+@import "./styles/theme-tokens.css";
+@import "./styles/utilities.css";
+@import "./styles/base.css";
+
+/* Accessibility floor for CSS-driven motion (tw-animate-css keyframes, button
+   transitions). JS-driven motion is handled by MotionConfig reducedMotion="user"
+   in MotionShell. Outside @layer so it always wins.
+   Exceptions: loading indicators keep spinning (frozen spinner reads as broken);
+   focus rings still get a perceptible transition via duration-fast on controls. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	::before,
+	::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	[data-slot="spinner"],
+	.animate-spin {
+		animation-duration: 0.8s !important;
+		animation-iteration-count: infinite !important;
+	}
+
+	/* Focus rings are assistive, not decorative: keep the outline/box-shadow
+	   transition at the fast token (--motion-fast) despite the clamp above. */
+	:focus-visible {
+		transition-duration: 120ms !important;
+	}
+}

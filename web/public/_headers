@@ -1,0 +1,33 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# CSP is deliberately absent: compose one per project from the origins actually
+# wired, never a generic policy. Recipe: docs/reference/deploy-checklist.md, "Composing the CSP".
+
+# Cloudflare Workers static assets serve Brotli/gzip automatically for text
+# (HTML, JS, CSS). Fingerprinted /assets/* responses are immutable; index.html
+# and sw.js revalidate so deploys pick up new hashes.
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/showcase
+  X-Robots-Tag: noindex,nofollow
+
+/login
+  X-Robots-Tag: noindex,nofollow
+
+/dashboard
+  X-Robots-Tag: noindex,nofollow
+
+# Vite fingerprints everything under /assets/ (JS, CSS, fonts), so the content
+# can be cached forever; a content change ships a new filename. index.html is
+# deliberately not matched here, so it keeps revalidating and picks up new hashes.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

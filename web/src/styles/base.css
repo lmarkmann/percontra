@@ -1,0 +1,38 @@
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	html {
+		@apply font-sans antialiased;
+	}
+	body {
+		@apply bg-background text-body text-foreground leading-body;
+	}
+	h1,
+	h2,
+	h3,
+	h4 {
+		@apply font-heading text-balance leading-title tracking-title;
+	}
+	/* Display size (48px) needs the tighter tracking token; title-level keeps tracking-title. */
+	.text-display {
+		letter-spacing: var(--tracking-display);
+		line-height: var(--leading-display);
+	}
+	p {
+		@apply text-pretty;
+	}
+
+	code {
+		@apply font-mono;
+	}
+
+	button,
+	a,
+	input,
+	textarea,
+	select,
+	[role="button"] {
+		touch-action: manipulation;
+	}
+}

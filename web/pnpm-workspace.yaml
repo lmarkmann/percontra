@@ -1,0 +1,34 @@
+# Not a monorepo. This is the single-app pnpm settings file (allowBuilds, overrides). There is no `packages:` list. Adding monorepo packages is a deliberate promotion later, not implied by this filename.
+
+# A version must be this old, in minutes, before pnpm will install it, transitive deps included.
+# 4320 = three days. One day is pnpm's own default but does not span a Friday-night publish caught
+# on Monday; a week delays every good release too. Setting the value explicitly also turns on
+# minimumReleaseAgeStrict, so resolution fails instead of quietly falling back to a too-new version.
+# A security fix needed today goes in minimumReleaseAgeExclude pinned to its exact version
+# (pkg@1.2.3), and comes back out once that version ages past the floor.
+minimumReleaseAge: 4320
+
+# Transitive deps resolve from trusted sources only: no git URLs, no tarball URLs.
+blockExoticSubdeps: true
+
+# Refuse a version whose trust level dropped relative to earlier releases, which is what a
+# stolen-credential publish looks like from outside.
+trustPolicy: no-downgrade
+
+# Exempt versions published more than a year ago (525600 minutes). Signatures and provenance only
+# became routine around 2023, so without this the policy fails on the pre-provenance era rather than
+# on anything suspicious: it rejected semver 5.7.2 and 6.3.1 here, both years-old transitive pins.
+# Published versions are immutable, so the trust-downgrade signal is about new releases anyway.
+trustPolicyIgnoreAfter: 525600
+
+allowBuilds:
+  esbuild: true
+  # msw's postinstall only prints a support banner and swallows its own failure; denying it is safe and msw/node still works (verified 2026-07-10 against 2.15.0).
+  msw: false
+  sharp: false
+  tree-sitter-python: false
+  workerd: true
+
+# Pin Vitest so a future dep bump cannot pull a second runner and split state. I have explicitly not migrated to Vite+ (`vp`) yet, as the stack is stable.
+overrides:
+  vitest: 4.1.10

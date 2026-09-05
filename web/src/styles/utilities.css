@@ -1,0 +1,125 @@
+@utility focus-ring {
+	@apply focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50;
+}
+
+@utility invalid-ring {
+	@apply aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40;
+}
+
+@utility icon-default {
+	@apply [&_svg:not([class*='size-'])]:size-4;
+}
+
+/*
+  Additive safe-area insets. Implemented as transparent borders so they stack
+  with pb-* / pt-* / py-* instead of fighting them for padding-bottom/top.
+  Pair freely: `pb-24 safe-bottom`, `py-16 safe-top safe-bottom`.
+*/
+@utility safe-top {
+	border-top: env(safe-area-inset-top, 0px) solid transparent;
+}
+
+@utility safe-bottom {
+	border-bottom: env(safe-area-inset-bottom, 0px) solid transparent;
+}
+
+/* Edge fades so scrollbars do not punch a hard box against content (jh3yy mask pattern). */
+@utility edge-fade-y {
+	mask-image: linear-gradient(
+		to bottom,
+		transparent 0,
+		#000 0.75rem,
+		#000 calc(100% - 0.75rem),
+		transparent 100%
+	);
+}
+
+@utility edge-fade-x {
+	mask-image: linear-gradient(
+		to right,
+		transparent 0,
+		#000 0.75rem,
+		#000 calc(100% - 0.75rem),
+		transparent 100%
+	);
+}
+
+/* Optional larger radius token; prefer default radius tokens in product chrome. */
+@utility rounded-superellipse {
+	border-radius: var(--radius-superellipse);
+}
+
+/*
+  Compositable text shimmer: a transform-translated gradient overlay instead of
+  tw-animate-css's `shimmer`, whose background-position animation repaints the
+  glyph mask every frame (docs/adr/009). Trades the glyph-clipped glow for a
+  box-level light sweep; the overlay rasterizes once and the GPU moves it.
+*/
+@utility shimmer-sweep {
+	position: relative;
+	overflow: hidden;
+
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			90deg,
+			transparent 20%,
+			color-mix(in oklab, var(--color-foreground) 12%, transparent) 50%,
+			transparent 80%
+		);
+		transform: translateX(-100%);
+		animation: shimmer-sweep var(--shimmer-duration, 2s) linear infinite;
+		will-change: transform;
+	}
+}
+
+@keyframes shimmer-sweep {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+/* Hairline image edge: pure black/white only (never tinted neutrals). */
+@utility image-outline {
+	outline: 1px solid oklch(0 0 0 / 0.1);
+	outline-offset: -1px;
+}
+
+.dark .image-outline {
+	outline-color: oklch(1 0 0 / 0.1);
+}
+
+/* Status meaning carried by hue alone: the OS palette would flatten these to
+   the canvas color and the dot would vanish. Opting out is only legal because
+   every consumer pairs the dot with a text label. */
+@utility status-dot {
+	@media (forced-colors: active) {
+		forced-color-adjust: none;
+	}
+}
+
+/*
+ * forced-colors: active drops box-shadow entirely, which is measured, not
+ * assumed: e2e/contrast-modes.spec.ts reads boxShadow as "none" on every
+ * probed element. Two roles ride on box-shadow here and both lose their
+ * geometry with it, so each needs an outline, which survives the mode and,
+ * unlike border, adds no layout box.
+ */
+@media (forced-colors: active) {
+	.shadow-border,
+	.shadow-border-hover,
+	.shadow-elevated,
+	.shadow-floating {
+		outline: 1px solid ButtonBorder;
+	}
+
+	/* Buttons set outline-none and express focus as ring-3, so without this the
+	   focus indicator is absent in the one mode whose users most depend on it.
+	   Last in the block so it wins the tie against the boundary rule above. */
+	:focus-visible {
+		outline: 3px solid Highlight;
+		outline-offset: 2px;
+	}
+}
