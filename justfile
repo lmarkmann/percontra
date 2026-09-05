@@ -20,6 +20,11 @@ dev:
 	PERCONTRA_DB=data/percontra.duckdb PERCONTRA_WEB_DIR=web/dist/client \
 		api/.venv/bin/percontra serve --host 127.0.0.1 --port 8080
 
+# The existing test site only; account setup and posting still need UI confirmation.
+live:
+	PERCONTRA_DB=data/percontra.duckdb PERCONTRA_WEB_DIR=web/dist/client \
+		api/.venv/bin/percontra serve --host 127.0.0.1 --port 8080 --live
+
 build:
 	pnpm --dir web install
 	pnpm --dir web build
@@ -43,16 +48,16 @@ contracts-check:
 deploy:
 	gcloud run deploy percontra --source . --project $PROJECT_ID --region europe-west2
 
-# Record a change for the next release (writes web/.changeset/<name>.md)
-changeset:
-	pnpm --dir web exec changeset
-
-# web/package.json is the one version source; api derives from it.
 # percontra.dev is a Worker that proxies to the Cloud Run service (edge/proxy.ts)
 deploy-edge:
 	pnpm --dir edge install --frozen-lockfile
 	pnpm --dir edge exec wrangler deploy
 
+# Record a change for the next release (writes web/.changeset/<name>.md)
+changeset:
+	pnpm --dir web exec changeset
+
+# web/package.json is the one version source; api derives from it.
 # Apply pending changesets: bump the version, write web/CHANGELOG.md, commit, tag. Push stays manual.
 release:
 	git diff --quiet && git diff --cached --quiet || { echo 'working tree dirty; commit or stash first'; exit 1; }
@@ -77,3 +82,7 @@ fix:
 # web: the ci.yml web job, locally (pnpm ci:local)
 lint-web:
 	pnpm --dir web ci:local
+
+# api: test suite with per-file coverage
+coverage:
+	uv run --directory api pytest --cov --cov-report=term-missing
