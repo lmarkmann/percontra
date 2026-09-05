@@ -1,0 +1,62 @@
+name: deploy
+
+# workflow_run is restricted to `branches: [main]`, runs with `contents: read`,
+# and checks out the exact SHA ci already tested, so it never builds untrusted
+# pull-request code. That is the safe shape of this trigger, not the usual one.
+on: # zizmor: ignore[dangerous-triggers]
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The frontend lives in web/, so every run step executes there.
+    defaults:
+      run:
+        working-directory: web
+    # Clones inherit this workflow but not the secrets, so the deploy step skips
+    # while the build still verifies the tested commit.
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      # actions/checkout v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      # pnpm/action-setup v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          package_json_file: web/package.json
+      # actions/setup-node v6.5.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: web/.node-version
+          # No dependency cache: a job that publishes a deploy artifact is the
+          # cache-poisoning shape zizmor flags, and one install per deploy is
+          # not worth the exposure. setup-node v6 caches on its own whenever
+          # package.json carries `packageManager`, so dropping `cache:` is not
+          # enough; the cache has to be turned off explicitly.
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Deploy to Cloudflare Workers
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        # cloudflare/wrangler-action v3 (tag target)
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          workingDirectory: web
