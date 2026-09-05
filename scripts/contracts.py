@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -124,15 +123,11 @@ def main():
         )
         artifacts = {
             ROOT / "api/percontra/contract/models.py": output.read_text(),
-            ROOT / "web/src/contract/migration.ts": subprocess.run(
-                ["pnpm", "exec", "oxfmt", "--stdin-filepath", "src/contract/migration.ts"],
-                cwd=ROOT / "web",
-                input=typescript(schema),
-                text=True,
-                env={**os.environ, "PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN": "false"},
-                capture_output=True,
-                check=True,
-            ).stdout,
+            # Emitted as generated, deliberately unformatted. oxfmt lists this
+            # path in ignorePatterns, so piping it through `pnpm exec oxfmt`
+            # returned the input byte for byte while making a Python-only CI job
+            # depend on Node. The generator's output is the artifact.
+            ROOT / "web/src/contract/migration.ts": typescript(schema),
         }
         for destination, content in artifacts.items():
             if args.check:

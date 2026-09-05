@@ -98,24 +98,10 @@ jobs:
         run: uv run pyrefly check
       - name: pytest
         run: uv run pytest --cov --cov-report=term-missing
-      # contracts.py formats the generated TypeScript through web/'s oxfmt
-      # before it compares, so this job needs the Node toolchain as well. Set
-      # up last, so a Python failure never waits on a pnpm install first.
-      # pnpm/action-setup v6
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
-        with:
-          package_json_file: web/package.json
-      # actions/setup-node v6.5.0
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version-file: web/.node-version
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-        working-directory: web
       # The Python models and the TypeScript types are both generated from
       # contracts/*.schema.json; a hand edit to either, or a schema change
-      # without regeneration, fails here.
+      # without regeneration, fails here. Pure Python despite emitting
+      # TypeScript: this job needs no Node toolchain.
       - name: contract drift
         run: uv run python ../scripts/contracts.py --check
 
