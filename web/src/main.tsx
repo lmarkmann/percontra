@@ -11,7 +11,6 @@ import { ToasterGate } from "@/components/toaster-gate";
 import { initAnalytics } from "@/lib/analytics";
 import { initErrorReporting } from "@/lib/error-reporting";
 import { queryClient } from "@/lib/query-client";
-import { registerServiceWorker } from "@/lib/register-service-worker";
 
 import { router } from "./router.tsx";
 
@@ -26,7 +25,13 @@ if ("requestIdleCallback" in window) {
 	setTimeout(scheduleOptionalSdks, 1);
 }
 
-registerServiceWorker();
+// No service worker while the demo sits behind HTTP basic auth at the edge.
+// The worker answers navigations with respondWith(fetch(request)), a 401 is a
+// successful fetch rather than a network error, and a response delivered
+// through respondWith never raises the browser's auth dialog: the page goes
+// blank and can never prompt. edge/proxy.ts serves a kill switch at /sw.js to
+// retire the registrations that already shipped. Restore this when the gate
+// comes off, not before.
 
 // non-null: #root is in index.html
 createRoot(document.getElementById("root")!).render(

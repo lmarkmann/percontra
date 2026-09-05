@@ -81,8 +81,47 @@ function authorized(request: Request, user: string, password: string): boolean {
 	);
 }
 
+/**
+ * A service worker and HTTP basic auth cannot both own a navigation.
+ *
+ * The app's worker answers navigations with `respondWith(fetch(request))`. A
+ * 401 is a successful fetch, not a network error, so it is passed straight back
+ * to the page; and a response delivered through `respondWith` never raises the
+ * browser's auth dialog. The result is a blank page that can never prompt, and
+ * it cannot self-heal, because fetching a corrected worker needs the very
+ * credentials the worker is preventing anyone from entering.
+ *
+ * So this is served ahead of the gate, unauthenticated: any browser still
+ * holding the old registration picks it up, tears itself down, and reloads into
+ * a normal gated navigation. It carries no content, so serving it to an
+ * unauthenticated client gives nothing away.
+ */
+const KILL_SWITCH_WORKER = `self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => {
+	event.waitUntil(
+		(async () => {
+			const keys = await caches.keys();
+			await Promise.all(keys.map((key) => caches.delete(key)));
+			await self.registration.unregister();
+			const windows = await self.clients.matchAll({ type: "window" });
+			for (const client of windows) client.navigate(client.url);
+		})(),
+	);
+});
+`;
+
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
+		// Ahead of the gate on purpose; see KILL_SWITCH_WORKER.
+		if (new URL(request.url).pathname === "/sw.js") {
+			return new Response(KILL_SWITCH_WORKER, {
+				headers: {
+					"Content-Type": "text/javascript; charset=utf-8",
+					"Cache-Control": "no-store",
+				},
+			});
+		}
+
 		// The gate sits in front of the proxy, not behind it: an unauthorized
 		// request never reaches Cloud Run, so neither the SPA bundle nor /api is
 		// served to it. That is the difference between this and the in-app gate,
