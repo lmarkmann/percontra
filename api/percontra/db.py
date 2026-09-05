@@ -6,8 +6,6 @@ Excel. Every sheet data table carries physical_row as its first column and
 is the authority for that row; nothing that identifies a row is inferred.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import duckdb

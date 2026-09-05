@@ -1,7 +1,5 @@
 """The /api surface, plus the fallback for client-side routes."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from django.conf import settings
@@ -11,9 +9,7 @@ from django.views.decorators.http import require_GET
 from . import __version__
 from .db import connect
 
-STUB = {
-    "detail": "not implemented yet; see docs/posting-contract.md and docs/decision.md"
-}
+STUB = {"detail": "not implemented yet; see docs/posting-contract.md and docs/decision.md"}
 
 
 def _gap_summary(conn, digest: str) -> dict | None:

@@ -20,6 +20,7 @@ dev = [
 	"datamodel-code-generator>=0.76.2",
 	"pyrefly>=1.2.0",
 	"pytest>=9.1",
+	"pytest-cov>=7.1.0",
 	"pytest-django>=4.14",
 	"ruff>=0.16.6",
 ]
@@ -54,6 +55,9 @@ select = ["E4", "E7", "E9", "F", "I", "N", "UP", "B", "RUF"]
 
 [tool.pyrefly]
 project-includes = ["percontra", "../scripts"]
+# verify_ui.py drives the built app through Playwright for Python, which is not an api
+# dependency; it is run by hand with uvx --with playwright.
+project-excludes = ["../scripts/verify_ui.py"]
 python-version = "3.14"
 
 # Warnings, not errors, while the pipeline passes untyped dicts around and openpyxl
@@ -66,3 +70,7 @@ bad-assignment = "warn"
 bad-argument-type = "warn"
 bad-return = "warn"
 bad-index = "warn"
+
+[tool.coverage.run]
+source = ["percontra"]
+omit = ["percontra/contract/models.py", "percontra/asgi.py"]

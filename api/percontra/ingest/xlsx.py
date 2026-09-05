@@ -1,13 +1,4 @@
-"""Read xlsx sheets with stable headers and physical row numbers.
-
-The header row is physical row 1 in every sheet of this dataset. Two sheets
-carry duplicate header names (`Static Date`, `GL Date` twice in the GL), so
-canonical column names are derived positionally: the first occurrence keeps
-the header, later ones get `_2`, `_3`. The original header text is
-preserved in `sheet_columns`; the canonical name is what code references.
-"""
-
-from __future__ import annotations
+"""Read workbook occurrences without inferring row numbers after filtering."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +6,8 @@ from pathlib import Path
 import polars as pl
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+
+HEADER_ROWS = {"LE Mapping": 2}
 
 
 @dataclass(frozen=True)
@@ -42,7 +35,8 @@ def read_header(path: str | Path, sheet: str) -> tuple[list[str], list[str]]:
     wb = load_workbook(path, read_only=True)
     try:
         ws = wb[sheet]
-        cells = next(ws.iter_rows(min_row=1, max_row=1))
+        header_row = HEADER_ROWS.get(sheet, 1)
+        cells = next(ws.iter_rows(min_row=header_row, max_row=header_row))
         raw = [str(c.value).strip() if c.value is not None else "" for c in cells]
         # Trailing empty cells are not columns.
         while raw and raw[-1] == "":
@@ -68,19 +62,23 @@ def read_sheet(path: str | Path, name: str) -> SheetModel:
     raw, letters = read_header(path, name)
     canonical = canonical_names(raw)
 
-    df = pl.read_excel(path, sheet_name=name)
-    if df.width != len(canonical):
-        raise ValueError(
-            f"{name!r}: read {df.width} columns, header row has {len(canonical)}"
-        )
-    if df.columns != canonical:
-        df = df.rename(dict(zip(df.columns, canonical)))
-
-    # physical_row is 1-based including the header row: the first data row
-    # is row 2.
-    n = len(df)
-    rows = pl.DataFrame(
-        {"physical_row": range(2, n + 2)}, schema={"physical_row": pl.Int64}
+    wb = load_workbook(path, read_only=True, data_only=True)
+    first = HEADER_ROWS.get(name, 1) + 1
+    try:
+        rows = [
+            [number, *values[: len(canonical)]]
+            for number, values in enumerate(
+                wb[name].iter_rows(min_row=first, max_col=len(canonical), values_only=True), first
+            )
+            if any(value is not None for value in values)
+        ]
+    finally:
+        wb.close()
+    df = pl.DataFrame(
+        rows,
+        schema=["physical_row", *canonical],
+        orient="row",
+        infer_schema_length=None,
+        strict=False,
     )
-    df = pl.concat([rows, df], how="horizontal")
-    return SheetModel(name, df, raw, canonical, letters, n)
+    return SheetModel(name, df, raw, canonical, letters, len(rows))

@@ -1,8 +1,7 @@
 """Command line: ingest the workbooks, serve the app."""
 
-from __future__ import annotations
-
 import argparse
+import json
 import os
 
 
@@ -22,9 +21,7 @@ def main(argv: list[str] | None = None) -> int:
         "--db", help="DuckDB file (default: $PERCONTRA_DB or data/percontra.duckdb)"
     )
     ingest.add_argument("--gl", required=True, help="Investor-Level GL workbook")
-    ingest.add_argument(
-        "--sample", required=True, help="Phase I loader sample workbook"
-    )
+    ingest.add_argument("--sample", required=True, help="Phase I loader sample workbook")
     ingest.add_argument(
         "--reference", required=True, help="Tranche 1 reference and verified loader"
     )
@@ -34,8 +31,34 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--web", help="built web app, e.g. web/dist")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8080)
+    serve.add_argument(
+        "--live",
+        action="store_true",
+        help="enable ERPNext writes in the loopback operator instance",
+    )
+
+    smoke = sub.add_parser(
+        "erpnext-smoke", help="preview or post a separate synthetic GBP 1.00 connectivity test"
+    )
+    smoke.add_argument("--post", action="store_true")
+    smoke.add_argument("--confirm-company")
 
     args = parser.parse_args(argv)
+
+    if args.command == "erpnext-smoke":
+        from .adapters.destination.erpnext import COMPANY, ERPError
+        from .erpnext_smoke import run
+
+        if args.post and args.confirm_company != COMPANY:
+            parser.error("--post requires --confirm-company 'Chalbury Co-Invest L.P.'")
+        os.environ["PERCONTRA_LIVE"] = "1" if args.post else "0"
+        try:
+            report = run(post=args.post)
+        except (ERPError, ValueError) as error:
+            print(json.dumps({"error": str(error)}))
+            return 1
+        print(json.dumps(report, indent=2, default=str))
+        return 0 if not args.post or report.get("receipt", {}).get("state") == "verified" else 1
 
     if args.command == "ingest":
         from .ingest import ingest_all
@@ -48,6 +71,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "serve":
+        if args.live and args.host not in ("127.0.0.1", "::1"):
+            parser.error("--live requires a loopback bind address")
+        os.environ["PERCONTRA_LIVE"] = "1" if args.live else "0"
         os.environ["PERCONTRA_DB"] = _db_path(args.db)
         if args.web:
             os.environ["PERCONTRA_WEB_DIR"] = args.web

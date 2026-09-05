@@ -1,12 +1,8 @@
 """Django settings for the Per Contra API.
 
-There is no ORM here. The data lives in DuckDB and is reached through
-percontra.db, so DATABASES is empty and the auth, sessions and
-contenttypes apps are absent. Nothing is stored server-side between
-requests, which is what lets the deployment be one stateless container.
+There is no ORM. DuckDB retains migration inputs and append-only decision,
+approval and receipt events. The demo runs as one local operator process.
 """
-
-from __future__ import annotations
 
 import os
 import secrets
@@ -14,9 +10,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Nothing is signed and no cookie is issued, so this key is only present
-# because Django requires one. An ephemeral key beats a committed default
-# in a repo the judges read.
+# CSRF protects the local operator's mutation endpoints.
 SECRET_KEY = os.environ.get("PERCONTRA_SECRET_KEY") or secrets.token_urlsafe(32)
 
 DEBUG = os.environ.get("PERCONTRA_DEBUG") == "1"
@@ -43,6 +37,10 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DUCKDB_PATH = os.environ.get("PERCONTRA_DB", "data/percontra.duckdb")
+MIGRATION_DB = os.environ.get(
+    "PERCONTRA_MIGRATION_DB", str(BASE_DIR.parent / "data/migration.duckdb")
+)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 85 * 1024 * 1024
 
 # The built web app, served by WhiteNoise from the same process and port.
 WEB_DIR = os.environ.get("PERCONTRA_WEB_DIR")
