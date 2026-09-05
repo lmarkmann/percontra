@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "SourceRow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["values", "source"],
+      "properties": {
+        "values": {"type": "object", "additionalProperties": {"type": "string"}},
+        "source": {"$ref": "posting.schema.json#/$defs/SourceRef"}
+      }
+    },
+    "Capabilities": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_evidence", "investor_allocation", "decision_author_reason", "destination_receipt", "change_impact"],
+      "properties": {
+        "source_evidence": {"$ref": "#/$defs/Verified"},
+        "investor_allocation": {"$ref": "#/$defs/Verified"},
+        "decision_author_reason": {"$ref": "#/$defs/Verified"},
+        "destination_receipt": {"$ref": "#/$defs/Verified"},
+        "change_impact": {"$ref": "#/$defs/Verified"}
+      }
+    },
+    "Verified": {"type": "string", "enum": ["verified", "partial", "unverified", "not_applicable"]},
+    "Receipt": {
+      "type": "object", "additionalProperties": false,
+      "required": ["submission_id", "company", "state", "doc_names", "artifact_digest", "response_digest", "verified_at", "posted_at", "detail"],
+      "properties": {
+        "submission_id": {"type": "string"}, "company": {"type": "string"},
+        "state": {"type": "string", "enum": ["prepared", "draft_saved", "submitted", "verified", "rejected", "unknown", "drifted"]},
+        "doc_names": {"type": "array", "items": {"type": "string"}},
+        "artifact_digest": {"type": "string"},
+        "response_digest": {"type": ["string", "null"]},
+        "verified_at": {"type": ["string", "null"]},
+        "posted_at": {"type": ["string", "null"]},
+        "detail": {"type": "string"}
+      }
+    }
+  }
+}
