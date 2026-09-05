@@ -24,6 +24,9 @@ ROOT_URLCONF = "percontra.urls"
 INSTALLED_APPS: list[str] = []
 
 MIDDLEWARE = [
+    # First: a request that did not come through the edge should not reach
+    # WhiteNoise either, or the SPA bundle is served to it.
+    "percontra.edge_auth.EdgeAuthMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",

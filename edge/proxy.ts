@@ -11,6 +11,13 @@ type Env = {
 	 */
 	ACCESS_USER?: string;
 	ACCESS_PASSWORD?: string;
+	/**
+	 * Shared with the origin, which rejects anything without it. Cloud Run
+	 * publishes its own URL and that URL is deterministic from the service name,
+	 * project number and region, so it cannot be hidden: this is what stops the
+	 * gate above from being bypassable by reading one line of the repo.
+	 */
+	EDGE_TOKEN?: string;
 };
 
 type GateState =
@@ -161,6 +168,11 @@ export default {
 		const upstream = new Request(url, request);
 		upstream.headers.set("X-Forwarded-Host", requestedHost);
 		upstream.headers.set("X-Forwarded-Proto", "https");
+		// Never forward the browser's credentials for our own gate: they are for
+		// this Worker, the origin has no use for them, and Cloud Run inspects
+		// Authorization for its own IAM.
+		upstream.headers.delete("Authorization");
+		if (env.EDGE_TOKEN) upstream.headers.set("X-Edge-Auth", env.EDGE_TOKEN);
 		return fetch(upstream);
 	},
 };
