@@ -14,7 +14,6 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarRail,
 } from "@/components/ui/sidebar";
 import { useSidebar } from "@/hooks/use-sidebar";
 
@@ -55,7 +54,9 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>Migration review</SidebarGroupLabel>
+					<SidebarGroupLabel className="overflow-hidden whitespace-nowrap group-data-[collapsible=icon]:invisible group-data-[collapsible=icon]:mt-0">
+						Migration review
+					</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{STEPS.map((step) => {
@@ -81,11 +82,10 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 			</SidebarContent>
 			<SidebarFooter className="gap-3 group-data-[collapsible=icon]:items-center">
 				<div className="px-2 text-caption text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
-					<SignedInAs fallback="Local operator" />
+					<SignedInAs />
 				</div>
 				<ThemeToggleLean />
 			</SidebarFooter>
-			<SidebarRail />
 		</Sidebar>
 	);
 }

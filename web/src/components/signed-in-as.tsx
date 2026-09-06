@@ -7,10 +7,10 @@ import { fetchSession, SIGN_OUT_PATH, type Session } from "@/lib/session";
  *
  * There is no login form to pair with this: Cloudflare Access authenticates
  * ahead of the Worker, so anyone who can see this header is already signed in.
- * The fallback covers every context where Access is not in front of the app,
- * which is where the label it replaces came from.
+ * Without Access in front of the app there is no identity to show, so this
+ * renders nothing unless a caller supplies a fallback label.
  */
-export function SignedInAs({ fallback }: { fallback: string }) {
+export function SignedInAs({ fallback }: { fallback?: string }) {
 	const [session, setSession] = useState<Session | null>(null);
 
 	useEffect(() => {
@@ -24,6 +24,7 @@ export function SignedInAs({ fallback }: { fallback: string }) {
 	}, []);
 
 	if (!session) {
+		if (!fallback) return null;
 		return (
 			<span className="text-caption text-muted-foreground">{fallback}</span>
 		);
