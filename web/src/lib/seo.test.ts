@@ -4,6 +4,8 @@ import { expect, test, vi } from "vitest";
 // origin configured, and a developer's .env must not decide whether they pass.
 vi.mock("@/env", () => ({ env: {} }));
 
+import type { RouteSeo } from "@/lib/seo";
+
 import {
 	absoluteUrl,
 	buildSitemapXml,
@@ -22,25 +24,34 @@ test("getSiteOrigin strips trailing slash", () => {
 
 test("absoluteUrl joins origin and path", () => {
 	expect(absoluteUrl("/", "https://example.com")).toBe("https://example.com");
-	expect(absoluteUrl("/login", "https://example.com")).toBe(
-		"https://example.com/login",
+	expect(absoluteUrl("/states", "https://example.com")).toBe(
+		"https://example.com/states",
 	);
-	expect(absoluteUrl("/login", undefined)).toBeUndefined();
+	expect(absoluteUrl("/states", undefined)).toBeUndefined();
 });
 
-test("home is indexable; the work surfaces are noindex", () => {
-	expect(routeSeo.home.robots).toBe("index,follow");
-	expect(routeSeo.review.robots).toBe("noindex,nofollow");
-	expect(routeSeo.release.robots).toBe("noindex,nofollow");
+// Nothing routed is indexable, so the canonical and JSON-LD branches of
+// `seoHead` have no route to exercise them. They stay live code for a fork that
+// opens a public surface, so the tests below feed them this literal instead.
+const indexableRoute: RouteSeo = {
+	path: "/",
+	title: "Indexable",
+	description: "A route a fork made public.",
+	robots: "index,follow",
+};
+
+test("every route is noindex behind the Access gate", () => {
+	expect(routeSeo.home.robots).toBe("noindex,nofollow");
+	expect(routeSeo.states.robots).toBe("noindex,nofollow");
 	expect(routeSeo.notFound.robots).toBe("noindex,nofollow");
-	expect(indexableSeoRoutes().map((r) => r.path)).toEqual(["/"]);
+	expect(indexableSeoRoutes()).toEqual([]);
 });
 
 test("route SEO matching respects path segment boundaries", () => {
-	expect(matchRouteSeo("/review")).toBe(routeSeo.review);
-	expect(matchRouteSeo("/review/gap-12")).toBe(routeSeo.review);
-	expect(matchRouteSeo("/review-queue")).toBe(routeSeo.notFound);
-	expect(matchRouteSeo("/releases")).toBe(routeSeo.notFound);
+	expect(matchRouteSeo("/states")).toBe(routeSeo.states);
+	expect(matchRouteSeo("/states/blocked")).toBe(routeSeo.states);
+	expect(matchRouteSeo("/states-old")).toBe(routeSeo.notFound);
+	expect(matchRouteSeo("/state")).toBe(routeSeo.notFound);
 });
 
 test("seoHead includes title, description, robots, and social tags", () => {
@@ -49,14 +60,15 @@ test("seoHead includes title, description, robots, and social tags", () => {
 	expect(titles).toEqual([{ title: routeSeo.home.title }]);
 	expect(
 		head.meta.some(
-			(m) => "name" in m && m.name === "robots" && m.content === "index,follow",
+			(m) =>
+				"name" in m && m.name === "robots" && m.content === "noindex,nofollow",
 		),
 	).toBe(true);
 	expect(head.links).toBeUndefined();
 });
 
 test("seoHead adds canonical and og:url only with origin", () => {
-	const head = seoHead(routeSeo.home, {
+	const head = seoHead(indexableRoute, {
 		origin: "https://example.com",
 		includeJsonLd: true,
 	});
@@ -75,7 +87,7 @@ test("seoHead adds canonical and og:url only with origin", () => {
 });
 
 test("noindex routes skip canonical", () => {
-	const head = seoHead(routeSeo.review, { origin: "https://example.com" });
+	const head = seoHead(routeSeo.states, { origin: "https://example.com" });
 	expect(head.links).toBeUndefined();
 });
 
@@ -85,9 +97,12 @@ test("buildWebSiteJsonLd is undefined without origin", () => {
 	expect(graph?.["@graph"]).toBeTruthy();
 });
 
-test("buildSitemapXml lists only indexable absolute locs", () => {
-	const xml = buildSitemapXml("https://example.com");
+test("buildSitemapXml lists only the paths it is given", () => {
+	const xml = buildSitemapXml("https://example.com", ["/"]);
 	expect(xml).toContain("<loc>https://example.com</loc>");
-	expect(xml).not.toContain("/login");
-	expect(xml).not.toContain("/showcase");
+	expect(xml).not.toContain("/states");
+});
+
+test("buildSitemapXml defaults to nothing while no route is indexable", () => {
+	expect(buildSitemapXml("https://example.com")).not.toContain("<loc>");
 });

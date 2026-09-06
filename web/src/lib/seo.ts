@@ -34,20 +34,6 @@ export const routeSeo = {
 		description: site.description,
 		ogImage: site.defaultOgImage,
 	},
-	review: {
-		...routeMetadata.review,
-		title: `${site.name} | Review queue`,
-		description:
-			"Mapping decisions awaiting a reviewer, grouped by accounting question.",
-		ogImage: site.defaultOgImage,
-	},
-	release: {
-		...routeMetadata.release,
-		title: `${site.name} | Release check`,
-		description:
-			"What changed since approval, and which approvals a changed decision made stale.",
-		ogImage: site.defaultOgImage,
-	},
 	states: {
 		...routeMetadata.states,
 		title: `${site.name} | States review`,
