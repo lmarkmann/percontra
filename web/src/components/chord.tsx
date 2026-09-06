@@ -39,7 +39,7 @@ export function Keycap({
 			data-slot="keycap"
 			data-state={state}
 			className={cn(
-				"duration-fast relative flex flex-col items-center justify-center border ease-out",
+				"relative flex flex-col items-center justify-center border duration-fast ease-out",
 				"motion-safe:transition-[transform,box-shadow,background-color,color,border-color]",
 				md
 					? "h-11 rounded-md [--keycap-lip:2px]"
