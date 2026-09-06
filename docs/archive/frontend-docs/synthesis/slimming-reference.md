@@ -1,7 +1,7 @@
 # Slimming & reconfiguration reference
 
 **Status:** Historical record (July 2026 slimming pass); see [architecture.md](../reference/architecture.md) for current defaults
-**Last updated:** 2026-07-03 (banner 2026-07-11)  
+**Last updated:** 2026-07-03 (banner 2026-07-11)
 **Audience:** Future you, when revisiting template defaults after a fork
 
 Several defaults moved on after this pass: General Translation briefly replaced the English-only store and was removed again under ADR 032, Charter prose returned (with preload and metric fallbacks), Playwright returned to `package.json` and CI, and the Hono Worker API landed. Sections below describe the state at the time of the pass.

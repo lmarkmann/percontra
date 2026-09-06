@@ -14,7 +14,7 @@ Contract refs point at [variants.md](./variants.md), [glossary.md](./glossary.md
 
 ### Composition
 
-**Recipe:** shared chrome for every routed view  
+**Recipe:** shared chrome for every routed view
 **Why:** One offline signal and skip path for the whole app so features do not invent their own (brief §6 states foundation).
 
 ### Layout skeleton
@@ -65,7 +65,7 @@ Desktop / Mobile (identical stack)
 
 ### Composition
 
-**Recipe:** product-forward lander (kicker, display title, one primary + one secondary CTA)  
+**Recipe:** product-forward lander (kicker, display title, one primary + one secondary CTA)
 **Why:** Success metric is five-minute recognition of a coherent system; lander is the first paint (brief §4).
 
 ### Layout skeleton
@@ -121,7 +121,7 @@ Mobile: same single column; CTAs wrap.
 
 ### Composition
 
-**Recipe:** design-system preview (scroll sections + lazy Motion shell)  
+**Recipe:** design-system preview (scroll sections + lazy Motion shell)
 **Why:** Primitive verification without Storybook (ADR-3; brief out of scope).
 
 ### Layout skeleton
@@ -179,7 +179,7 @@ Mobile: single column, section gap-16.
 
 ### Composition
 
-**Recipe:** auth form with mutation phase + shared ErrorState  
+**Recipe:** auth form with mutation phase + shared ErrorState
 **Why:** Protected routes need a demo auth path; WorkOS is optional seam (env).
 
 ### Layout skeleton
@@ -237,7 +237,7 @@ Mobile: same; form max-w-md.
 
 ### Composition
 
-**Recipe:** authenticated resource view with full ResourceResult lattice  
+**Recipe:** authenticated resource view with full ResourceResult lattice
 **Why:** Template reference for loaders and non-happy paths (brief §6 StatesShowcase + view-state).
 
 ### Layout skeleton
@@ -320,7 +320,7 @@ Mobile: header stacks; project grid 1 col then sm:2.
 
 ### Composition
 
-**Recipe:** composed chat card (scroller + composer + attachment + transport errors)  
+**Recipe:** composed chat card (scroller + composer + attachment + transport errors)
 **Why:** Track B demo of conversation primitives with scripted transport (track-b.md).
 
 ### Layout skeleton
@@ -384,7 +384,7 @@ Mobile: full-width card; scroller height constrained.
 
 ### Composition
 
-**Recipe:** empty-pattern 404 with single home CTA  
+**Recipe:** empty-pattern 404 with single home CTA
 **Why:** Router `*` + SPA not_found_handling; static `public/404.html` is non-GET fallback only.
 
 ### Layout skeleton
@@ -425,7 +425,7 @@ Mobile: full-width card; scroller height constrained.
 
 ### Composition
 
-**Recipe:** full-page recovery (not field, not transport)  
+**Recipe:** full-page recovery (not field, not transport)
 **Why:** Class boundary in main provider tree; copy + reload + copy details.
 
 ### Layout skeleton

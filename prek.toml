@@ -1,0 +1,114 @@
+# The one hook config for the repo. Orchestration only: ordering, staging, and
+# file filters live here, every command delegates to a `justfile` recipe so a
+# hook and a human run exactly the same thing. See https://prek.j178.dev.
+
+default_install_hook_types = ["pre-commit", "pre-push"]
+
+# Whitespace fixers must finish before the formatters, or the two write the same
+# file at once.
+[priorities]
+hygiene = 0
+fmt = 1
+types = 2
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "check-merge-conflict", name = "no merge conflict markers", priority = "hygiene" },
+  { id = "mixed-line-ending", name = "line endings are consistent", priority = "hygiene" },
+  { id = "end-of-file-fixer", name = "files end with a newline", priority = "hygiene" },
+  { id = "trailing-whitespace", name = "no trailing whitespace", priority = "hygiene" },
+  { id = "check-toml", name = "toml parses", priority = "hygiene" },
+  { id = "check-json", name = "json parses", priority = "hygiene" },
+  # The submission repo goes public: neither a key nor a client dataset may ride along.
+  { id = "detect-private-key", name = "no private keys", priority = "hygiene" },
+  { id = "check-added-large-files", name = "no large files", priority = "hygiene" },
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "ruff",
+    name = "ruff formats and fixes python",
+    entry = "just fix",
+    language = "system",
+    priority = "fmt",
+    pass_filenames = false,
+    files = "^(api|scripts)/.*\\.py$",
+  },
+  {
+    id = "oxfmt",
+    name = "oxfmt formats web",
+    entry = "just format-web",
+    language = "system",
+    priority = "fmt",
+    pass_filenames = false,
+    files = "^web/",
+    types_or = ["ts", "tsx", "javascript", "jsx", "json", "css"],
+  },
+  {
+    id = "validate-config",
+    name = "prek.toml is valid",
+    entry = "prek validate-config prek.toml",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^prek\\.toml$",
+  },
+  {
+    # Wider than the ruff filter on purpose: `just lint` ends in the contract
+    # drift check, and drift comes from editing contracts/*.schema.json without
+    # regenerating, which touches no .py file.
+    id = "api-lint",
+    name = "ruff, pyrefly, contract drift",
+    entry = "just lint",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^(api/|scripts/|contracts/)",
+  },
+  {
+    id = "tsc",
+    name = "tsc typechecks web",
+    entry = "just typecheck-web",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^web/",
+    types_or = ["ts", "tsx"],
+  },
+  {
+    id = "oxlint",
+    name = "oxlint lints web",
+    entry = "just lint-web",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^web/",
+    types_or = ["ts", "tsx"],
+  },
+  {
+    # Pre-push only: the two suites are 26 of the 30 seconds, too slow for the
+    # commit path. CI still owns knip, audit, size, build, and Playwright.
+    id = "pytest",
+    name = "pytest (pre-push)",
+    entry = "just test",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^(api/|scripts/|contracts/)",
+    stages = ["pre-push"],
+  },
+  {
+    id = "vitest",
+    name = "vitest (pre-push)",
+    entry = "just test-web",
+    language = "system",
+    priority = "types",
+    pass_filenames = false,
+    files = "^web/",
+    types_or = ["ts", "tsx"],
+    stages = ["pre-push"],
+  },
+]

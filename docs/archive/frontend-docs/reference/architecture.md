@@ -1,6 +1,6 @@
 # Architecture: vite-template
 
-**Status:** Living document  
+**Status:** Living document
 **Last updated:** 2026-07-11
 
 This template is a **design-forward frontend starter**, not a minimal empty shell. `/` is a lean product home; `/showcase` lazy-loads the design-system preview. Routing, auth seams, i18n, analytics, a thin Hono Worker API, and Cloudflare deploy plumbing are production-shaped so a clone can grow into a product without re-scaffolding.
