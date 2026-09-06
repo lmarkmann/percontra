@@ -1,7 +1,8 @@
 import hashlib
-import json
 from datetime import UTC, datetime
 from uuid import uuid4
+
+import orjson
 
 from percontra.contract import Receipt
 
@@ -67,7 +68,7 @@ def submit(service, batch, idempotency_key):
         artifact = destination.render(postings=postings)
         run_id, _, _, _ = service.context()
         identifier = str(uuid4())
-        document = json.loads(artifact.content)
+        document = orjson.loads(artifact.content)
         document["user_remark"] += "; attempt " + identifier
         attempt = {
             "id": identifier,

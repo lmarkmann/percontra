@@ -8,9 +8,11 @@ dependencies = [
 	"duckdb>=1.5",
 	"fastexcel>=0.21",
 	"openpyxl>=3.1",
+	"orjson>=3.11",
 	"polars>=1.44",
 	"pyarrow>=25",
 	"pydantic>=2.13",
+	"typer>=0.27",
 	"uvicorn[standard]>=0.52",
 	"whitenoise>=6.12",
 ]

@@ -1,7 +1,7 @@
 import hashlib
-import json
 from pathlib import Path
 
+import orjson
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
@@ -49,7 +49,7 @@ def endpoint(request, resource, identifier=None, action=None):
         if request.method == "POST":
             operator(request)
             if request.content_type == "application/json":
-                body = json.loads(request.body)
+                body = orjson.loads(request.body)
                 if not isinstance(body, dict):
                     raise ValueError("JSON request body must be an object")
         with LOCK:

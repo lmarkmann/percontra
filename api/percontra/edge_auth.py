@@ -16,8 +16,6 @@ says so: that distinction is not pedantry, it is the exact bug that put this
 site online with an empty password.
 """
 
-from __future__ import annotations
-
 import hmac
 import os
 from collections.abc import Callable

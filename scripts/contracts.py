@@ -117,7 +117,7 @@ def main():
                 "--use-annotated",
                 "--disable-timestamp",
                 "--target-python-version",
-                "3.12",
+                "3.14",
             ],
             check=True,
         )

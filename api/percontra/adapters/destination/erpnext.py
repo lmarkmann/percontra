@@ -1,4 +1,3 @@
-import json
 import os
 import shlex
 import urllib.error
@@ -8,6 +7,8 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
+
+import orjson
 
 from percontra.contract import Capabilities
 
@@ -101,17 +102,17 @@ class ERPNextAdapter:
             url,
             method=method,
             headers=headers,
-            data=json.dumps(body, default=str).encode() if body is not None else None,
+            data=orjson.dumps(body, default=str) if body is not None else None,
         )
         try:
             with urllib.request.build_opener(NoRedirect).open(request, timeout=20) as response:
-                return json.loads(response.read(), parse_float=Decimal)
+                return orjson.loads(response.read())
         except urllib.error.HTTPError as error:
             raise ERPError(
                 f"ERPNext returned HTTP {error.code}",
                 uncertain=method != "GET" and error.code >= 500,
             ) from None
-        except urllib.error.URLError, TimeoutError, json.JSONDecodeError:
+        except urllib.error.URLError, TimeoutError, orjson.JSONDecodeError:
             raise ERPError("ERPNext response unavailable", uncertain=method != "GET") from None
 
     def records(self, doctype, fields, filters):
@@ -122,8 +123,8 @@ class ERPNextAdapter:
                 "GET",
                 "/api/resource/" + doctype,
                 params={
-                    "fields": json.dumps(fields),
-                    "filters": json.dumps(filters),
+                    "fields": orjson.dumps(fields).decode(),
+                    "filters": orjson.dumps(filters).decode(),
                     "limit_start": offset,
                     "limit_page_length": 200,
                     "order_by": "name asc",
@@ -353,7 +354,7 @@ class ERPNextAdapter:
             + "; investor allocation evidence retained in Percontra",
         }
         return ExportArtifact(
-            json.dumps(document, sort_keys=True).encode(),
+            orjson.dumps(document, option=orjson.OPT_SORT_KEYS),
             "erpnext-journal.json",
             "application/json",
         )

@@ -1,6 +1,6 @@
-import json
 from decimal import Decimal
 
+import orjson
 import pytest
 
 from percontra import submissions
@@ -19,7 +19,7 @@ class FixtureERP(ERPNextAdapter):
 
     def render(self, *, postings):
         return ExportArtifact(
-            json.dumps(
+            orjson.dumps(
                 {
                     "company": COMPANY,
                     "posting_date": "2026-06-30",
@@ -42,7 +42,7 @@ class FixtureERP(ERPNextAdapter):
                         },
                     ],
                 }
-            ).encode(),
+            ),
             "fixture.json",
             "application/json",
         )

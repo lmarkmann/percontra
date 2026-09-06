@@ -1,6 +1,6 @@
-import json
 from io import BytesIO
 
+import orjson
 import pytest
 from django.test import Client
 from openpyxl import load_workbook
@@ -16,7 +16,7 @@ def operator(tmp_path, settings):
 
     def post(path, payload):
         return client.post(
-            path, json.dumps(payload), content_type="application/json", HTTP_X_CSRFTOKEN=token
+            path, orjson.dumps(payload), content_type="application/json", HTTP_X_CSRFTOKEN=token
         )
 
     return client, post

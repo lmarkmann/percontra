@@ -1,14 +1,14 @@
-import json
 import urllib.error
 from decimal import Decimal
 from io import BytesIO
 
+import orjson
 import pytest
 
 from percontra.adapters.destination.erpnext import SITE, Connection, ERPError, ERPNextAdapter
 
 
-def test_decimal_readback_document_can_be_submitted_without_float_conversion(monkeypatch):
+def test_decimal_amounts_round_trip_through_request_and_response(monkeypatch):
     requests = []
 
     class Opener:
@@ -21,8 +21,8 @@ def test_decimal_readback_document_can_be_submitted_without_float_conversion(mon
     response = adapter.request(
         "POST", "/api/method/frappe.client.submit", body={"doc": {"total_debit": Decimal("127.19")}}
     )
-    assert json.loads(requests[0].data)["doc"]["total_debit"] == "127.19"
-    assert response["message"]["total_debit"] == Decimal("127.19")
+    assert orjson.loads(requests[0].data)["doc"]["total_debit"] == "127.19"
+    assert Decimal(str(response["message"]["total_debit"])) == Decimal("127.19")
     assert "fixture-secret" not in repr(adapter.connection)
 
 

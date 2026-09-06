@@ -1,5 +1,7 @@
 """A separate synthetic GBP connectivity check, never a relabelled dataset 02 batch."""
 
+import orjson
+
 from . import submissions
 from .adapters.destination.erpnext import COMPANY
 from .core.generate import digest
@@ -66,12 +68,10 @@ def payload():
 
 
 def prepare(path=None):
-    import json
-
     service = MigrationService(path or SMOKE_DB)
     fixture = payload()
-    (service.store.path.parent / "synthetic-gbp-connectivity.json").write_text(
-        json.dumps(fixture["fixture_document"], sort_keys=True, separators=(",", ":"))
+    (service.store.path.parent / "synthetic-gbp-connectivity.json").write_bytes(
+        orjson.dumps(fixture["fixture_document"], option=orjson.OPT_SORT_KEYS)
     )
     service.store.save_run(digest(fixture), fixture)
     batch = next(iter(service.batches()))

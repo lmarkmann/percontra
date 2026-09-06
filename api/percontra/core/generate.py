@@ -1,15 +1,14 @@
 import hashlib
-import json
 from collections import Counter, defaultdict
 from decimal import ROUND_HALF_UP, Decimal
+
+import orjson
 
 from percontra.contract import MappingRef, Posting, SourceRow
 
 
 def digest(value) -> str:
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()
-    ).hexdigest()
+    return hashlib.sha256(orjson.dumps(value, default=str, option=orjson.OPT_SORT_KEYS)).hexdigest()
 
 
 def amount(value: str) -> str:

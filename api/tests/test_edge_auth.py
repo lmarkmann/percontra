@@ -1,7 +1,5 @@
 """The origin must be unreachable except through the edge."""
 
-from __future__ import annotations
-
 import pytest
 from django.test import Client
 
