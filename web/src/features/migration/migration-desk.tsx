@@ -456,16 +456,16 @@ export function MigrationDesk() {
 											</caption>
 											<thead className="text-label text-muted-foreground">
 												<tr>
-													<th className="sticky top-0 z-10 border-b bg-background py-3 font-medium">
+													<th className="sticky top-0 z-raised border-b bg-background py-3 font-medium">
 														Source row
 													</th>
-													<th className="sticky top-0 z-10 border-b bg-background px-3 font-medium">
+													<th className="sticky top-0 z-raised border-b bg-background px-3 font-medium">
 														Treatment
 													</th>
-													<th className="sticky top-0 z-10 border-b bg-background px-3 text-right font-medium">
+													<th className="sticky top-0 z-raised border-b bg-background px-3 text-right font-medium">
 														Amount
 													</th>
-													<th className="sticky top-0 z-10 border-b bg-background pl-3 font-medium">
+													<th className="sticky top-0 z-raised border-b bg-background pl-3 font-medium">
 														Status
 													</th>
 												</tr>
