@@ -16,6 +16,9 @@ whoever asked regardless.
 | Piece | Where |
 | --- | --- |
 | The gate | Access application `Per Contra`, Zero Trust org `qmark.cloudflareaccess.com` |
+| Application id | `dc54f387-cc63-46e1-89ed-ecd1a8361ee3` |
+| Policy id | `938f1160-a506-4a87-9d24-c66999ec613d` |
+| The token that edits it | `op://Developer/ACCESS_TOKEN_PER_CONTRA/credential`, scoped to Access: Apps and Policies: Edit. **Not** the Workers token in the same vault; that one answers `auth.forbidden` here |
 | Who it lets in | The application's allow policy, one email rule per person |
 | The login page | Cloudflare's, at `qmark.cloudflareaccess.com`; Google and one-time PIN both offered |
 | Identity in the app | `edge/proxy.ts` reads `ctx.access`, answers `GET /api/session` |
@@ -36,7 +39,7 @@ Google and one-time PIN providers already configured in the org.
 # The token never reaches the command line or shell history: curl reads the
 # header from stdin. A failed `op read` writes nothing, so assert non-empty
 # before spending the request.
-set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+set -l token (op read 'op://Developer/ACCESS_TOKEN_PER_CONTRA/credential')
 and test -n "$token"
 and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
   -X POST 'https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps' \
@@ -45,8 +48,7 @@ and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
     "type": "self_hosted",
     "name": "Per Contra",
     "destinations": [
-      { "type": "worker", "worker_id": "3d9f1e7d07ca44f09b0def06aa161548" },
-      { "type": "public", "uri": "percontra.dev" }
+      { "type": "worker", "worker_id": "3d9f1e7d07ca44f09b0def06aa161548" }
     ],
     "session_duration": "24h",
     "auto_redirect_to_identity": false,
@@ -63,9 +65,11 @@ and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
 set -e token
 ```
 
-Both destinations are listed on purpose. `worker` covers the Worker's own
-production and preview URLs; `public` covers the `percontra.dev` custom domain
-without depending on the first to extend to it.
+One destination is enough. The `worker` binding covers everything that reaches
+the Worker, the `percontra.dev` custom domain and the
+`percontra.luis-markmann.workers.dev` URL alike; both were checked to redirect,
+and the login token names `percontra.dev` as its hostname. A second `public`
+destination for the custom domain would be redundant.
 
 `auto_redirect_to_identity` stays false so the login page offers both Google and
 a one-time PIN. Instant redirect to Google is one click fewer for the two of us
@@ -88,10 +92,10 @@ adding an `include` rule; the whole `include` array is replaced, so send every
 address that should keep working.
 
 ```fish
-set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+set -l token (op read 'op://Developer/ACCESS_TOKEN_PER_CONTRA/credential')
 and test -n "$token"
 and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
-  -X PUT "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/$APP_ID/policies/$POLICY_ID" \
+  -X PUT "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/dc54f387-cc63-46e1-89ed-ecd1a8361ee3/policies/938f1160-a506-4a87-9d24-c66999ec613d" \
   -H 'Content-Type: application/json' \
   --data '{
     "name": "Per Contra reviewers",
@@ -115,10 +119,10 @@ Delete the Access application. Nothing else changes: the Worker keeps proxying,
 to its static label.
 
 ```fish
-set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+set -l token (op read 'op://Developer/ACCESS_TOKEN_PER_CONTRA/credential')
 and test -n "$token"
 and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
-  -X DELETE "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/$APP_ID"
+  -X DELETE "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/dc54f387-cc63-46e1-89ed-ecd1a8361ee3"
 set -e token
 ```
 
