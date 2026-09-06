@@ -16,6 +16,12 @@ from .adapters.registry import catalog
 from .erpnext_smoke import SMOKE_DB
 from .service import LOCK, ROOT, MigrationService
 
+# The page a reviewer opens first leads with what needs a human. Sorting here
+# rather than in the browser keeps the order true across pages, since the
+# client only ever holds one page. `sorted` is stable, so source order survives
+# within a rank.
+ATTENTION_RANK = {"stale": 0, "blocked": 1, "needs_decision": 2, "ready": 3}
+
 
 def service():
     return MigrationService(settings.MIGRATION_DB)
@@ -92,6 +98,7 @@ def endpoint(request, resource, identifier=None, action=None):
                     rows = [row for row in rows if row.status == status]
                 offset = max(0, int(request.GET.get("offset", 0)))
                 limit = max(1, min(200, int(request.GET.get("limit", 50))))
+                rows = sorted(rows, key=lambda row: ATTENTION_RANK[row.status])
                 return JsonResponse(
                     {
                         "total": len(rows),
