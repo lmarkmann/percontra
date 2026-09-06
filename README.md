@@ -6,8 +6,11 @@ A migration review desk for fund accountants: resolve a mapping gap, approve a c
   <img width="612" height="101" alt="image" src="https://github.com/user-attachments/assets/86baa1e4-547c-4378-a066-4ad64f423579" />
 </p>
 
+<a href="https://pitch.com/v/per-contra-pitch-deck-wsbsvu" > Find our presentation here <a>
+
 [![Watch the video](https://img.youtube.com/vi/pciMnVqbwa0/maxresdefault.jpg)](https://youtu.be/pciMnVqbwa0)
 
+ 
 ## The problem
 
 > "What I care about is the count of turns. That is the drag on my time."
