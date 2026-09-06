@@ -79,8 +79,24 @@ fix:
 	uv run --directory api ruff check --fix . ../scripts
 	uv run --directory api ruff format . ../scripts
 
-# web: the ci.yml web job, locally (pnpm ci:local)
+# web: oxfmt write (the prek fmt hook)
+format-web:
+	pnpm --dir web format
+
+# web: oxfmt --check + oxlint, read-only (the prek lint hook)
 lint-web:
+	pnpm --dir web lint
+
+# web: tsc -b (the prek types hook)
+typecheck-web:
+	pnpm --dir web typecheck
+
+# web: vitest single run, not the watcher (the prek pre-push hook)
+test-web:
+	pnpm --dir web test:run
+
+# web: the ci.yml web job, locally (pnpm ci:local)
+verify-web:
 	pnpm --dir web ci:local
 
 # api: test suite with per-file coverage
