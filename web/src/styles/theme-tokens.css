@@ -3,19 +3,20 @@
 @custom-variant hover-fine (@media (hover: hover) and (pointer: fine));
 
 /* Metric-matched fallback faces so text set in the system font wraps where the
-   web font will (no reflow when Inter/Newzald arrive). Values computed with
-   fontaine's formula from @capsizecss/metrics 4.1.0 (Arial, Georgia, Inter)
-   and font_metrics.py on test-newzald-book.woff2 (Georgia's width sample was
-   incomplete there, so the tool fell back to xAvgCharWidth); Inter-over-Arial
-   agrees with the published fontaine/next-font output (107.4% / 90.2% / 22.48%)
-   within the metrics sample drift. Lives here (not the font CSS files) so
-   critical.css inlines the fallbacks for the static shell. */
+   web font will (no reflow when Söhne/Newzald arrive). Values computed with
+   font_metrics.py on the vendored woff2 against @capsizecss/metrics 4.1.0
+   (Arial, Georgia). Both Klim test cuts lack most of the punctuation in the
+   width sample, so the tool fell back to xAvgCharWidth for them; that is a
+   sample-drift caveat on size-adjust, not on the vertical overrides. Each
+   fallback matches the face that leads its stack, so the numbers move whenever
+   that face does. Lives here (not the font CSS files) so critical.css inlines
+   the fallbacks for the static shell. */
 @font-face {
-	font-family: "Inter Fallback";
+	font-family: "Test Söhne Fallback";
 	src: local("Arial");
-	size-adjust: 107.12%;
-	ascent-override: 90.44%;
-	descent-override: 22.52%;
+	size-adjust: 100.27%;
+	ascent-override: 116.79%;
+	descent-override: 42.19%;
 	line-gap-override: 0%;
 }
 
@@ -29,9 +30,13 @@
 }
 
 @theme inline {
-	/* Inter = UI + headings. Test Newzald = prose only (`font-prose`); faces in newzald-font.css. */
+	/* Test Söhne = UI + headings, Test Newzald = prose only (`font-prose`);
+	   faces in soehne-font.css and newzald-font.css. Inter is no longer a
+	   chosen face: it is the coverage layer under Söhne, whose 68-character test
+	   cut has no punctuation or currency. Söhne first, Inter second, never the
+	   other way round. */
 	--font-heading: var(--font-sans);
-	--font-sans: "Inter Variable", "Inter Fallback", sans-serif;
+	--font-sans: "Test Söhne", "Inter Variable", "Test Söhne Fallback", sans-serif;
 	--font-serif:
 		"Test Newzald", "Test Newzald Fallback", "Bitstream Charter", "Sitka Text", "Iowan Old Style",
 		Georgia, "Times New Roman", serif;
@@ -94,19 +99,22 @@
 	--color-surface-tinted-hover: var(--surface-tinted-hover);
 	--color-secondary-hover: var(--secondary-hover);
 	--color-muted-hover: var(--muted-hover);
-	/* Motion scale (skill-canonical). Prefer --motion-* in new CSS; --duration-*
-	   aliases feed Tailwind utilities (duration-fast, duration-base, ...). */
+	/* Motion scale (skill-canonical). Prefer --motion-* in new CSS. The aliases
+	   below feed the Tailwind utilities (duration-fast, duration-base, ...) and
+	   must sit in the --transition-duration-* namespace: named --duration-*
+	   they generated nothing and every duration class silently fell back to
+	   Tailwind's 150ms default. */
 	--motion-fast: 120ms;
 	--motion-base: 200ms;
 	--motion-medium: 280ms;
 	--motion-slow: 400ms;
 	--motion-slower: 600ms;
-	--duration-fast: var(--motion-fast);
-	--duration-base: var(--motion-base);
-	--duration-normal: var(--motion-base);
-	--duration-medium: var(--motion-medium);
-	--duration-slow: var(--motion-slow);
-	--duration-slower: var(--motion-slower);
+	--transition-duration-fast: var(--motion-fast);
+	--transition-duration-base: var(--motion-base);
+	--transition-duration-normal: var(--motion-base);
+	--transition-duration-medium: var(--motion-medium);
+	--transition-duration-slow: var(--motion-slow);
+	--transition-duration-slower: var(--motion-slower);
 	/* Default UI easing is ease-out (decelerates into rest). emphasized is
 	   reserved for at most one hero element per viewport. */
 	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);

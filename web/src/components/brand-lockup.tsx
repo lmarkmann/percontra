@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 const WORDMARK = "Per Contra";
 
 /** Mark width and cap height as a fraction of the em, mirroring brand-lockup.css. */
-const MARK_WIDTH_EM = 0.62;
-const MARK_HEIGHT_EM = 0.34;
+const MARK_WIDTH_EM = 0.6;
+const MARK_HEIGHT_EM = 0.4;
 const CAP_HEIGHT_EM = 0.7;
 
 export type BrandLockupProps = {

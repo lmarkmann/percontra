@@ -54,6 +54,19 @@ of its sweep. A discrete property cannot interpolate, so the hidden layer can
 neither bleed a half-pixel of its antialiased edge at rest nor drift during the
 sweep. A pixel of margin was tried first and produced each fault in turn.
 
+**The rail and the lockup share one clock.** Both run on `--motion-medium` with
+the emphasized easing, and the lockup derives its two beats from that single
+value, so the wordmark finishes resolving exactly as the rail finishes opening.
+The registry's 200ms linear width transition is gone. Wiring this up exposed a
+latent bug: the duration aliases were named `--duration-*`, which is not a
+Tailwind namespace, so they generated no utilities and every `duration-fast` and
+`duration-medium` class in the app silently fell back to Tailwind's 150ms
+default. They now sit in `--transition-duration-*` and resolve.
+
+**The mark is 24px square** when collapsed, centred on the icon column, and the
+wordmark is set from the same 2.5rem so it reads as a masthead rather than a
+line of body text. `--brand-lockup-size` is the single size knob.
+
 **The six `--sidebar-*` colour roles return.** ADR 041 deleted them because
 nothing rendered a sidebar. They reference the same ramps as the card roles, so
 the rail reads as a raised surface rather than a second palette, and they carry
@@ -68,7 +81,7 @@ forced-colors overrides like every other role.
   to nothing.
 - The wordmark is Klim Test Newzald Bold, so it moves with whatever ADR 042
   settles. The lockup reads `--font-serif`; nothing else changes when the face does.
-- Home boot is 108.23 kB brotli against a 115 kB budget, CSS 14.77 kB against
+- Home boot is 108.33 kB brotli against a 115 kB budget, CSS 14.92 kB against
   16 kB. Both still pass.
 - `sheet` and `use-mobile` arrived with the sidebar and are used only by it.
 
@@ -77,5 +90,6 @@ forced-colors overrides like every other role.
 `pnpm check`, `pnpm typecheck`, `pnpm knip` clean; `pnpm test` 183 passing in 58
 files; `pnpm size` as quoted above. Both rest states and the collapse restore
 were checked in the browser against the built bundle at 1440px: rail collapsed
-from the cookie, and the mark's left edge measured 16px, the same as the icon
-column.
+from the cookie, the mark measured 23.99 by 23.99 px with its centre on the icon
+column's, and `duration-fast` and `duration-medium` resolved to 120ms and 280ms
+rather than the 150ms fallback.

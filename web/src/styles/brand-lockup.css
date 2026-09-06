@@ -21,9 +21,20 @@
   instance in brand-lockup.tsx, after the face has loaded.
 */
 .brand-lockup {
+	/* One knob. At 2.5rem the mark measures 24px square, matching the icon
+	   column it collapses into. */
+	--brand-lockup-size: 2.5rem;
+	/* The rail's width transition runs on the same token, so the wordmark
+	   finishes resolving exactly as the rail finishes opening. */
+	--brand-lockup-duration: var(--motion-medium);
+	--brand-lockup-beat: calc(var(--brand-lockup-duration) * 0.5);
+	--brand-lockup-sweep: calc(var(--brand-lockup-duration) * 0.65);
+	--brand-lockup-offset: calc(var(--brand-lockup-duration) * 0.35);
 	--brand-lockup-rule: 0.04em;
 	--brand-lockup-gap: 0.06em;
-	--brand-lockup-mark-width: 0.62em;
+	/* Square: 0.6em wide, and 0.6em tall counting up from the rules through the
+	   0.06em window offset and the 0.4em block. */
+	--brand-lockup-mark-width: 0.6em;
 	--brand-lockup-cap: 0.7em;
 
 	position: relative;
@@ -31,7 +42,7 @@
 	width: var(--brand-lockup-width, 6em);
 	height: 1.06em;
 	font-family: var(--font-serif);
-	font-size: 1em;
+	font-size: var(--brand-lockup-size);
 	font-weight: 700;
 	line-height: 1;
 	letter-spacing: -0.015em;
@@ -117,13 +128,13 @@
 
 .brand-lockup[data-state="mark"] .brand-lockup-block {
 	transform: scale(
-		var(--brand-lockup-mark-scale-x, 0.1),
-		var(--brand-lockup-mark-scale-y, 0.486)
+		var(--brand-lockup-mark-scale-x, 0.174),
+		var(--brand-lockup-mark-scale-y, 0.5714)
 	);
 }
 
 .brand-lockup[data-state="mark"] .brand-lockup-rules {
-	transform: scaleX(var(--brand-lockup-mark-scale-x, 0.1));
+	transform: scaleX(var(--brand-lockup-mark-scale-x, 0.174));
 }
 
 .brand-lockup[data-state="word"] .brand-lockup-word-window {
@@ -161,36 +172,39 @@
 @media (prefers-reduced-motion: no-preference) {
 	.brand-lockup[data-state="word"] .brand-lockup-rules,
 	.brand-lockup[data-state="word"] .brand-lockup-block {
-		transition: transform var(--motion-medium) var(--ease-emphasized);
+		transition: transform var(--brand-lockup-beat) var(--ease-emphasized);
 	}
 
 	.brand-lockup[data-state="word"] .brand-lockup-word-window,
 	.brand-lockup[data-state="word"] .brand-lockup-word,
 	.brand-lockup[data-state="word"] .brand-lockup-slide {
-		transition: transform var(--motion-slow) var(--ease-emphasized) 240ms;
+		transition: transform var(--brand-lockup-sweep) var(--ease-emphasized)
+			var(--brand-lockup-offset);
 	}
 
 	.brand-lockup[data-state="word"] .brand-lockup-block-window {
 		transition:
-			transform var(--motion-slow) var(--ease-emphasized) 240ms,
-			visibility 0s linear calc(var(--motion-slow) + 240ms);
+			transform var(--brand-lockup-sweep) var(--ease-emphasized)
+				var(--brand-lockup-offset),
+			visibility 0s linear var(--brand-lockup-duration);
 	}
 
 	.brand-lockup[data-state="mark"] .brand-lockup-block-window,
 	.brand-lockup[data-state="mark"] .brand-lockup-word,
 	.brand-lockup[data-state="mark"] .brand-lockup-slide {
-		transition: transform var(--motion-slow) var(--ease-emphasized);
+		transition: transform var(--brand-lockup-sweep) var(--ease-emphasized);
 	}
 
 	.brand-lockup[data-state="mark"] .brand-lockup-word-window {
 		transition:
-			transform var(--motion-slow) var(--ease-emphasized),
-			visibility 0s linear var(--motion-slow);
+			transform var(--brand-lockup-sweep) var(--ease-emphasized),
+			visibility 0s linear var(--brand-lockup-sweep);
 	}
 
 	.brand-lockup[data-state="mark"] .brand-lockup-rules,
 	.brand-lockup[data-state="mark"] .brand-lockup-block {
-		transition: transform var(--motion-medium) var(--ease-emphasized) 360ms;
+		transition: transform var(--brand-lockup-beat) var(--ease-emphasized)
+			var(--brand-lockup-beat);
 	}
 }
 

@@ -45,9 +45,12 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 
 	return (
 		<Sidebar collapsible="icon">
-			<SidebarHeader className="h-16 justify-center px-4">
-				<a href="/" className="block rounded-sm focus-ring py-1">
-					<BrandLockup state={lockupState} className="text-lead" />
+			<SidebarHeader className="h-18 justify-center px-4 group-data-[collapsible=icon]:px-3">
+				<a
+					href="/"
+					className="block overflow-hidden rounded-sm focus-ring py-1"
+				>
+					<BrandLockup state={lockupState} />
 				</a>
 			</SidebarHeader>
 			<SidebarContent>
