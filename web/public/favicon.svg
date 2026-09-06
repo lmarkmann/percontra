@@ -1,3 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-	<rect width="32" height="32" rx="8" fill="#3e7a5e"/>
+	<!-- The Per Contra mark from brand-lockup.css: the unresolved block over the double rule. -->
+	<rect width="32" height="32" rx="7" fill="#fff"/>
+	<rect x="4" y="4" width="24" height="16" fill="#000"/>
+	<rect x="4" y="22" width="24" height="2" fill="#000"/>
+	<rect x="4" y="26" width="24" height="2" fill="#000"/>
 </svg>
