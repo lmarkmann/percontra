@@ -1,4 +1,11 @@
-import type { Batch, Overview, Posting } from "./migration-client";
+import type {
+	Batch,
+	Gap,
+	Overview,
+	Posting,
+	Receipt,
+} from "./migration-client";
+import type { Release } from "@/contract/migration";
 import type { MigrationFailure } from "@/lib/migration-failure";
 
 /**
@@ -60,6 +67,26 @@ export function staleBatches(overview: Overview | null): string[] {
 }
 
 /**
+ * Step ids whose gate has passed, so the rail can fill them in. Each gate is
+ * the state its step's own action leaves behind, so the rail answers "where am
+ * I in the review" off the current state instead of re-parsing the sections.
+ */
+export function completedSteps(
+	overview: Overview | null,
+	batch: Batch | null,
+	receipts: Receipt[],
+): string[] {
+	const done: string[] = [];
+	if (overview?.loaded) done.push("step-handover");
+	if (batch) done.push("step-review");
+	if (batch?.release?.state === "approved") done.push("step-signoff");
+	if (receipts.some((receipt) => receipt.state === "verified")) {
+		done.push("step-acceptance");
+	}
+	return done;
+}
+
+/**
  * Why the review queue is empty, which decides what the reviewer should do.
  * `null` means it is not empty and the queue should render.
  */
@@ -70,4 +97,88 @@ export function reviewQueueEmptiness(
 	if (!overview?.loaded) return "unloaded";
 	if (overview.gaps.length > 0) return null;
 	return filtered ? "filtered" : "resolved";
+}
+
+/** One bound decision as the approval saw it beside its latest version. */
+export type BoundDecisionRow = {
+	label: string;
+	signedVersion: number;
+	signedTarget: string;
+	signedBy: string;
+	nowVersion: number;
+	nowTarget: string;
+	nowBy: string;
+	nowAt: string;
+	diverged: boolean;
+};
+
+function gapLabel(gap: Gap): string {
+	return `${gap.values.GL_Account ?? ""} / ${gap.values.Trans_Type ?? ""}`;
+}
+
+/**
+ * The per contra view of a release: each decision the approval was granted on
+ * against the version that exists now. A bound id with no gap in the overview
+ * is skipped rather than thrown, because the overview is a projection and the
+ * approval is the record.
+ */
+export function boundDecisionRows(
+	overview: Overview,
+	release: Release,
+): BoundDecisionRow[] {
+	const rows: BoundDecisionRow[] = [];
+	for (const bound of release.bound_decisions) {
+		const gap = overview.gaps.find((candidate) =>
+			candidate.history.some(
+				(decision) => decision.decision_id === bound.decision_id,
+			),
+		);
+		const signed = gap?.history.find(
+			(decision) => decision.version === bound.version,
+		);
+		const now = gap?.history.at(-1);
+		if (!gap || !signed || !now) continue;
+		rows.push({
+			label: gapLabel(gap),
+			signedVersion: signed.version,
+			signedTarget: signed.target.trans_type,
+			signedBy: signed.author,
+			nowVersion: now.version,
+			nowTarget: now.target.trans_type,
+			nowBy: now.author,
+			nowAt: now.decided_at,
+			diverged: now.version !== signed.version,
+		});
+	}
+	return rows;
+}
+
+/** What recording a new version of a gap's decision does to each approval. */
+export type BlastRadius = {
+	willStale: Batch[];
+	unaffected: Batch[];
+	notYetApproved: Batch[];
+};
+
+export function blastRadius(overview: Overview, gap: Gap): BlastRadius {
+	const decisionId = gap.history.at(-1)?.decision_id;
+	const radius: BlastRadius = {
+		willStale: [],
+		unaffected: [],
+		notYetApproved: [],
+	};
+	for (const batch of overview.batches) {
+		const bound =
+			decisionId !== undefined &&
+			batch.release?.state === "approved" &&
+			batch.release.bound_decisions.some(
+				(ref) => ref.decision_id === decisionId,
+			);
+		if (bound) radius.willStale.push(batch);
+		else if (batch.release) radius.unaffected.push(batch);
+		else if (gap.entities.includes(batch.key.legal_entity)) {
+			radius.notYetApproved.push(batch);
+		}
+	}
+	return radius;
 }

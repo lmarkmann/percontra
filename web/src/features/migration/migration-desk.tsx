@@ -13,13 +13,16 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { describeMigrationFailure } from "@/lib/migration-failure";
-import { postingStatus } from "@/lib/posting-status";
+import { ATTENTION_RANK, postingStatus } from "@/lib/posting-status";
 
 import { DeskSidebar } from "./desk-sidebar";
 import {
 	IDLE,
 	LOADING_OVERVIEW,
 	LOADING_POSTINGS,
+	blastRadius,
+	boundDecisionRows,
+	completedSteps,
 	reviewQueueEmptiness,
 	staleBatches,
 	type DeskActivity,
@@ -42,6 +45,7 @@ import {
 	type Receipt,
 	type Target,
 } from "./migration-client";
+import { SignedVsNow } from "./signed-vs-now";
 
 const fieldClass =
 	"mt-1 min-h-11 w-full rounded-lg border bg-background px-3 py-2 text-caption focus-ring";
@@ -84,7 +88,18 @@ export function MigrationDesk() {
 	const batch = overview?.batches.find(
 		(candidate) => candidate.id === selected,
 	);
+	const rankedPostings = postings
+		.map((posting) => ({
+			posting,
+			status: postingStatus(posting, batch?.release),
+		}))
+		.toSorted((a, b) => ATTENTION_RANK[a.status] - ATTENTION_RANK[b.status]);
 	const gap = overview?.gaps.find((candidate) => candidate.row === gapRow);
+	const signedRows =
+		overview && batch?.release
+			? boundDecisionRows(overview, batch.release)
+			: [];
+	const radius = overview && gap ? blastRadius(overview, gap) : null;
 	const approved = batch?.release?.state === "approved";
 	const ready = batch?.statuses.ready === batch?.rows && Boolean(batch);
 	const liveReady =
@@ -184,10 +199,11 @@ export function MigrationDesk() {
 	const availableSteps = ["step-handover"];
 	if (batch) availableSteps.push("step-review", "step-signoff");
 	availableSteps.push("step-acceptance");
+	const doneSteps = completedSteps(overview, batch ?? null, receipts);
 
 	return (
 		<SidebarProvider>
-			<DeskSidebar availableSteps={availableSteps} />
+			<DeskSidebar availableSteps={availableSteps} completedSteps={doneSteps} />
 			<SidebarInset className="min-h-svh bg-background text-foreground">
 				<header className="border-b">
 					<div className="flex items-center gap-3 px-5 py-5">
@@ -424,24 +440,33 @@ export function MigrationDesk() {
 												</p>
 											</div>
 										))}
-									<div className="overflow-x-auto">
+									{batch?.release ? (
+										<SignedVsNow release={batch.release} rows={signedRows} />
+									) : null}
+									<div className="max-h-96 overflow-auto">
 										<table className="w-full text-left text-caption">
 											<caption className="sr-only">
-												Generated postings for the selected batch
+												Generated postings for the selected batch, unresolved
+												rows first
 											</caption>
 											<thead className="text-label text-muted-foreground">
 												<tr>
-													<th className="py-3 font-medium">Source row</th>
-													<th className="px-3 font-medium">Treatment</th>
-													<th className="px-3 text-right font-medium">
+													<th className="sticky top-0 z-10 border-b bg-background py-3 font-medium">
+														Source row
+													</th>
+													<th className="sticky top-0 z-10 border-b bg-background px-3 font-medium">
+														Treatment
+													</th>
+													<th className="sticky top-0 z-10 border-b bg-background px-3 text-right font-medium">
 														Amount
 													</th>
-													<th className="pl-3 font-medium">Status</th>
+													<th className="sticky top-0 z-10 border-b bg-background pl-3 font-medium">
+														Status
+													</th>
 												</tr>
 											</thead>
 											<tbody>
-												{postings.map((posting) => {
-													const status = postingStatus(posting, batch?.release);
+												{rankedPostings.map(({ posting, status }) => {
 													return (
 														<tr
 															key={posting.posting_id}
@@ -765,6 +790,37 @@ export function MigrationDesk() {
 												Recorded as {author || "the reviewer named in sign-off"}
 												. This is a new version, not an edit to history.
 											</p>
+											{radius ? (
+												<div role="note" className="space-y-1 text-caption">
+													{radius.willStale.length ? (
+														<>
+															<p className="text-status-stale-fg">
+																Recording v
+																{(gap.history.at(-1)?.version ?? 0) + 1} will
+																stale:{" "}
+																{radius.willStale
+																	.map(
+																		(row) =>
+																			`${row.key.legal_entity} (${row.rows} rows, signed by ${row.release?.approved_by ?? "unknown"})`,
+																	)
+																	.join("; ")}
+															</p>
+															{radius.unaffected.length ? (
+																<p className="text-muted-foreground">
+																	Unaffected:{" "}
+																	{radius.unaffected
+																		.map((row) => row.key.legal_entity)
+																		.join(", ")}
+																</p>
+															) : null}
+														</>
+													) : (
+														<p className="text-muted-foreground">
+															No approval depends on this decision yet.
+														</p>
+													)}
+												</div>
+											) : null}
 											<Button
 												type="submit"
 												disabled={

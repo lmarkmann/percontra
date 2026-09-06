@@ -1,4 +1,4 @@
-import { BadgeCheck, Inbox, ListChecks, Upload } from "lucide-react";
+import { BadgeCheck, Check, Inbox, ListChecks, Upload } from "lucide-react";
 
 import { BrandLockup } from "@/components/brand-lockup";
 import { SignedInAs } from "@/components/signed-in-as";
@@ -34,13 +34,19 @@ function scrollToStep(id: string) {
 export type DeskSidebarProps = {
 	/** Step ids whose section is on the page right now. */
 	availableSteps: readonly string[];
+	/** Step ids whose gate has passed; these get the filled check. */
+	completedSteps: readonly string[];
 };
 
-export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
+export function DeskSidebar({
+	availableSteps,
+	completedSteps,
+}: DeskSidebarProps) {
 	const { state, isMobile } = useSidebar();
 	// The rail collapses to the icon width, so the lockup resolves with it. On
 	// mobile the sidebar is a sheet that is only ever open, so it stays a word.
-	const lockupState = state === "collapsed" && !isMobile ? "mark" : "word";
+	const isRail = state === "collapsed" && !isMobile;
+	const lockupState = isRail ? "mark" : "word";
 
 	return (
 		<Sidebar collapsible="icon">
@@ -61,6 +67,7 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 						<SidebarMenu>
 							{STEPS.map((step) => {
 								const present = availableSteps.includes(step.id);
+								const done = completedSteps.includes(step.id);
 								return (
 									<SidebarMenuItem key={step.id}>
 										<SidebarMenuButton
@@ -70,7 +77,18 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 												if (present) scrollToStep(step.id);
 											}}
 										>
-											<step.icon aria-hidden />
+											<span className="relative shrink-0">
+												<step.icon aria-hidden />
+												{done && (
+													<span className="absolute -top-1 -right-1.5 flex size-3.5 items-center justify-center rounded-full bg-success text-success-foreground">
+														<Check
+															className="size-2.5!"
+															strokeWidth={3}
+															aria-hidden
+														/>
+													</span>
+												)}
+											</span>
 											<span>{step.label}</span>
 										</SidebarMenuButton>
 									</SidebarMenuItem>
@@ -81,10 +99,10 @@ export function DeskSidebar({ availableSteps }: DeskSidebarProps) {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter className="gap-3 group-data-[collapsible=icon]:items-center">
-				<div className="px-2 text-caption text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
-					<SignedInAs />
+				<div className="group-data-[collapsible=icon]:hidden">
+					<ThemeToggleLean />
 				</div>
-				<ThemeToggleLean />
+				<SignedInAs collapsed={isRail} />
 			</SidebarFooter>
 		</Sidebar>
 	);
