@@ -19,10 +19,10 @@ import { useSidebar } from "@/hooks/use-sidebar";
 
 /** The desk is one page in four steps; each step's section carries this id. */
 const STEPS = [
-	{ id: "step-handover", label: "Bring in the handover", icon: Inbox },
-	{ id: "step-review", label: "Review the batch", icon: ListChecks },
-	{ id: "step-signoff", label: "Sign off this version", icon: BadgeCheck },
-	{ id: "step-acceptance", label: "Destination acceptance", icon: Upload },
+	{ id: "step-handover", label: "Handover", icon: Inbox },
+	{ id: "step-review", label: "Batch review", icon: ListChecks },
+	{ id: "step-signoff", label: "Sign-off", icon: BadgeCheck },
+	{ id: "step-acceptance", label: "Destination", icon: Upload },
 ] as const;
 
 function scrollToStep(id: string) {

@@ -226,16 +226,14 @@ export function MigrationDesk() {
 					className="mx-auto max-w-7xl space-y-8 px-5 py-8 outline-none"
 				>
 					<div className="flex flex-wrap items-end justify-between gap-5">
-						<div className="space-y-2">
-							<p className="text-label font-medium text-primary">
-								SOURCE / DECISION / RELEASE / RECEIPT
-							</p>
-							<h1 className="text-display font-semibold tracking-tight">
-								Know what you are signing off.
+						<div className="space-y-1">
+							<h1 className="text-title font-semibold tracking-tight">
+								Migration sign-off
 							</h1>
-							<p className="max-w-2xl font-prose text-title text-muted-foreground">
-								Every amount has a source. Every override has an author. A
-								changed decision needs a fresh approval.
+							<p className="max-w-2xl font-prose text-body text-muted-foreground">
+								Each posting traces to its source rows and the decisions it
+								depends on. When a decision changes, any approval that relied on
+								it needs signing again.
 							</p>
 						</div>
 						<Button
@@ -287,9 +285,7 @@ export function MigrationDesk() {
 					>
 						<div className="flex flex-wrap items-center justify-between gap-4">
 							<div>
-								<h2 className="text-body font-semibold">
-									1. Bring in the handover
-								</h2>
+								<h2 className="text-body font-semibold">1. Handover</h2>
 								<p className="mt-1 text-caption text-muted-foreground">
 									{overview?.loaded
 										? `${overview.label ?? "Migration"}. ${overview.source_count.toLocaleString("en-US")} source rows read.`
@@ -413,7 +409,7 @@ export function MigrationDesk() {
 									<div className="flex flex-wrap justify-between gap-3">
 										<div>
 											<h2 className="text-body font-semibold">
-												2. Review the batch
+												2. Batch review
 											</h2>
 											<p className="mt-1 text-caption text-muted-foreground">
 												Click an amount to follow it back to the source.
@@ -571,9 +567,7 @@ export function MigrationDesk() {
 										</Button>
 									</div>
 									<div id="step-signoff" className="space-y-3 border-t pt-4">
-										<h3 className="text-body font-semibold">
-											3. Sign off this version
-										</h3>
+										<h3 className="text-body font-semibold">3. Sign-off</h3>
 										<label className="block text-caption">
 											Reviewer name
 											<input
@@ -871,9 +865,7 @@ export function MigrationDesk() {
 					>
 						<div className="flex flex-wrap items-start justify-between gap-3">
 							<div>
-								<h2 className="text-body font-semibold">
-									4. Destination acceptance
-								</h2>
+								<h2 className="text-body font-semibold">4. Destination</h2>
 								<p className="mt-1 text-caption text-muted-foreground">
 									ERPNext is an optional live general ledger, not a fund
 									allocation engine. Only {company} may be posted.

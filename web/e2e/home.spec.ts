@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { siteName } from "./helpers/site";
 
-const heroHeading = "Know what you are signing off.";
+const heroHeading = "Migration sign-off";
 
 test.describe("home entry journey", () => {
 	test("lands on the migration desk", async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe("home entry journey", () => {
 		// No API is running behind vite preview, so the desk lands in its failed
 		// state. The frame is what this asserts: chrome and hero paint either way.
 		await expect(
-			page.getByText("SOURCE / DECISION / RELEASE / RECEIPT"),
+			page.getByText(/Each posting traces to its source rows/),
 		).toBeVisible();
 	});
 
@@ -23,11 +23,11 @@ test.describe("home entry journey", () => {
 		await page.goto("/does-not-exist");
 
 		await expect(
-			page.getByRole("heading", { name: "Page not found" }),
+			page.getByRole("heading", { name: "No entry on this side" }),
 		).toBeVisible();
 		await expect(page.getByText(siteName)).toBeVisible();
 
-		await page.getByRole("link", { name: /back home/i }).click();
+		await page.getByRole("link", { name: /back to the desk/i }).click();
 		await expect(page).toHaveURL("/");
 		await expect(
 			page.getByRole("heading", { name: heroHeading }),
@@ -52,7 +52,7 @@ test.describe("home entry journey", () => {
 
 		await expect(root).toHaveAttribute("lang", "en");
 		await expect(
-			page.getByRole("heading", { name: "Page not found" }),
+			page.getByRole("heading", { name: "No entry on this side" }),
 		).toBeVisible();
 	});
 });

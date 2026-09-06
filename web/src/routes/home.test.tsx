@@ -20,7 +20,7 @@ test("renders the migration review desk without vendor credentials", async () =>
 	);
 	renderRoute("/");
 	await screen.findByRole("heading", {
-		name: "Know what you are signing off.",
+		name: "Migration sign-off",
 	});
 	expect(
 		screen.getByRole("button", { name: "Public example" }),

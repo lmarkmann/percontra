@@ -19,7 +19,7 @@ function renderRail(available: string[], completed: string[]) {
 test("a finished step keeps its step icon and gains the filled check", () => {
 	renderRail(["step-handover"], ["step-handover"]);
 	const button = screen.getByRole("button", {
-		name: "Bring in the handover",
+		name: "Handover",
 	});
 	expect(button.querySelector("svg.lucide-inbox")).not.toBeNull();
 	expect(button.querySelector("svg.lucide-check")).not.toBeNull();
@@ -27,7 +27,7 @@ test("a finished step keeps its step icon and gains the filled check", () => {
 
 test("an available but unfinished step shows neither check nor lock", () => {
 	renderRail(["step-review"], []);
-	const button = screen.getByRole("button", { name: "Review the batch" });
+	const button = screen.getByRole("button", { name: "Batch review" });
 	expect(button.querySelector("svg.lucide-check")).toBeNull();
 	expect(button.getAttribute("aria-disabled")).toBe("false");
 });
@@ -35,7 +35,7 @@ test("an available but unfinished step shows neither check nor lock", () => {
 test("an unreachable step is muted and takes no clicks", () => {
 	renderRail(["step-handover"], []);
 	const button = screen.getByRole("button", {
-		name: "Sign off this version",
+		name: "Sign-off",
 	});
 	expect(button.querySelector("svg.lucide-check")).toBeNull();
 	expect(button.getAttribute("aria-disabled")).toBe("true");
