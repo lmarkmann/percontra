@@ -58,7 +58,7 @@ export async function apiRequest(
 	return response;
 }
 
-// Structural seam so classic zod and zod/mini schemas both fit (ADR 031).
+// Structural seam so classic zod and zod/mini schemas both fit (ADR 003).
 interface WireSchema<T> {
 	parse(data: unknown): T;
 }

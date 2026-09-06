@@ -58,11 +58,11 @@
 			"error",
 			{
 				"name": "parseInt",
-				"message": "Use Number() and check Number.isNaN; parseInt only for non-base-10 input with a disable comment (ADR 029, GT-53)"
+				"message": "Use Number() and check Number.isNaN; parseInt only for non-base-10 input with a disable comment (ADR 001, GT-53)"
 			},
 			{
 				"name": "parseFloat",
-				"message": "Use Number() and check Number.isNaN (ADR 029, GT-53)"
+				"message": "Use Number() and check Number.isNaN (ADR 001, GT-53)"
 			}
 		],
 		"no-throw-literal": "error",

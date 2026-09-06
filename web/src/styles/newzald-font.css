@@ -1,4 +1,4 @@
-/* Klim Test Newzald for prose (`font-prose`), pending the ADR 042 decision.
+/* Klim Test Newzald for prose (`font-prose`), pending the ADR 007 decision.
    WOFF2 from the Klim test font pack (see src/fonts/KLIM-TEST-LICENCE.txt);
    the licence forbids redistribution, so the woff2 files are gitignored and
    only present on a developer machine. font-display: optional so UI never
