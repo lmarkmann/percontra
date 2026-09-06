@@ -61,7 +61,7 @@ export function BridgePage() {
 
 	return (
 		<div className="min-h-svh bg-background text-foreground">
-			<SiteHeader kicker="Per Contra · Bridge">
+			<SiteHeader kicker="Per Contra: Bridge">
 				<Link
 					to="/"
 					className="text-caption text-muted-foreground underline-offset-4 hover:underline"
@@ -94,7 +94,7 @@ export function BridgePage() {
 					</Notice>
 				) : checking ? (
 					<p className="text-caption text-muted-foreground">
-						Checking session…
+						Checking session...
 					</p>
 				) : user ? (
 					<>
@@ -282,7 +282,7 @@ function Connections() {
 				))}
 			</div>
 			{list === null && !error ? (
-				<p className="text-caption text-muted-foreground">Loading…</p>
+				<p className="text-caption text-muted-foreground">Loading...</p>
 			) : null}
 		</Section>
 	);
@@ -453,10 +453,10 @@ function Migration() {
 				{busy ? (
 					<p className="text-caption text-muted-foreground">
 						{busy === "seed"
-							? "Creating demo records…"
+							? "Creating demo records..."
 							: busy === "preview"
-								? "Reading the source and shaping records…"
-								: "Reading the source and writing to the destination…"}
+								? "Reading the source and shaping records..."
+								: "Reading the source and writing to the destination..."}
 					</p>
 				) : null}
 				{message ? <Notice tone="info">{message}</Notice> : null}
@@ -486,7 +486,7 @@ function ResultView({ result }: { result: MigrationResult }) {
 					{result.dry_run ? "Preview, nothing written" : "Migration run"}
 				</StatusPill>
 				<span className="text-caption text-muted-foreground">
-					{result.direction} · {result.seconds}s
+					{result.direction}, {result.seconds}s
 				</span>
 			</div>
 
