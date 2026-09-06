@@ -18,19 +18,22 @@ describe("SignedInAs", () => {
 		mockFetchSession.mockResolvedValue(null);
 	});
 
-	it("shows the IdP display name and a sign-out link", async () => {
+	it("shows the IdP display name and opens a menu with the sign-out link", async () => {
 		mockFetchSession.mockResolvedValue({
 			email: "luis@example.com",
 			name: "Luis Markmann",
 		});
 
-		renderWithProviders(<SignedInAs />);
+		const { user } = renderWithProviders(<SignedInAs />);
 
 		expect(await screen.findByText("Luis Markmann")).toBeInTheDocument();
-		expect(screen.getByRole("link", { name: "Sign out" })).toHaveAttribute(
-			"href",
-			SIGN_OUT_PATH,
-		);
+		expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "Account menu" }));
+
+		const signOut = await screen.findByRole("menuitem", { name: "Sign out" });
+		expect(signOut).toHaveAttribute("href", SIGN_OUT_PATH);
+		expect(screen.getByText("luis@example.com")).toBeInTheDocument();
 	});
 
 	it("falls back to the email when the IdP sends no name", async () => {
@@ -44,27 +47,30 @@ describe("SignedInAs", () => {
 		expect(await screen.findByText("luis@example.com")).toBeInTheDocument();
 	});
 
-	it("collapsed shows only the avatar as the named image", async () => {
+	it("collapsed shows only the avatar, named after the person", async () => {
 		mockFetchSession.mockResolvedValue({
 			email: "luis@example.com",
 			name: "Luis Markmann",
 		});
 
-		renderWithProviders(<SignedInAs collapsed />);
+		const { user } = renderWithProviders(<SignedInAs collapsed />);
+
+		const trigger = await screen.findByRole("button", {
+			name: "Luis Markmann, account menu",
+		});
+		expect(screen.queryByText("Luis Markmann")).not.toBeInTheDocument();
+
+		await user.click(trigger);
 
 		expect(
-			await screen.findByRole("img", { name: "Luis Markmann" }),
-		).toBeInTheDocument();
-		expect(screen.queryByText("Luis Markmann")).not.toBeInTheDocument();
-		expect(
-			screen.queryByRole("link", { name: "Sign out" }),
-		).not.toBeInTheDocument();
+			await screen.findByRole("menuitem", { name: "Sign out" }),
+		).toHaveAttribute("href", SIGN_OUT_PATH);
 	});
 
 	it("renders nothing without a session or fallback", async () => {
 		renderWithProviders(<SignedInAs />);
 
 		await waitFor(() => expect(mockFetchSession).toHaveBeenCalled());
-		expect(screen.queryByRole("link", { name: "Sign out" })).toBeNull();
+		expect(screen.queryByRole("button")).toBeNull();
 	});
 });
