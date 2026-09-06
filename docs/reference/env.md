@@ -1,56 +1,68 @@
 # Environment variables
 
-This file is the env contract for the template. There is no `.env.example` on purpose: `.gitignore` ignores `.env` and `.env.*` without negations, so an example file could never be committed. Instead, create a gitignored `.env.local` at the repo root and copy the lines you need from the block below.
+Every variable Per Contra reads, in one place. There is no `.env.example` on
+purpose: `.gitignore` ignores `.env` and `.env.*` without negations, so an
+example file could never be committed. Create a gitignored `.env` at the
+repository root and copy the lines you need.
 
 Rules:
 
-- Never commit a file matching `.env*`; the ignore rules exist so a real key cannot land in history.
-- Never put server secrets in `VITE_*` vars. Everything with the `VITE_` prefix is inlined into the public browser bundle.
-- Every var is optional. A fresh clone builds and runs with none set; each seam stays inert until its keys appear.
-- The typed surface is `src/env.ts` (`@t3-oss/env-core` + zod). Add new vars there first, then document them here.
+- Never commit a file matching `.env*`. The ignore rules exist so a real key
+  cannot land in history, and the submission repo is public.
+- Never put a secret in a `VITE_*` var. Everything with that prefix is inlined
+  into the public browser bundle.
+- Every variable is optional. A fresh clone builds, runs and passes its tests
+  with none set; `./demo.sh` needs none of them.
+- The client surface is typed in `web/src/env.ts` (`@t3-oss/env-core` plus
+  `zod/mini`). Add a client var there first, then document it here.
 
-```sh
-# --- Site identity ---------------------------------------------------------
-# Public origin, no trailing slash. Unlocks absolute OG/Twitter images,
-# home canonical + og:url, WebSite JSON-LD, and dist/sitemap.xml emit.
-#VITE_APP_URL=https://example.com
+## Client, build time
 
-# --- API -------------------------------------------------------------------
-# HTTP origin for api-client, session, and dashboard fetches (cookie
-# credentials included). Unset = demo mode (local fixtures, no network).
-# Set to http://localhost:5173 during `pnpm dev` to exercise the local Worker
-# (server/index.ts, GET /api/dashboard) instead of demo mode.
-#VITE_API_BASE_URL=https://api.example.com
+Inlined into the bundle. Public by construction.
 
-# --- Analytics (requires `pnpm add posthog-js`) -----------------------------
-# PostHog project key; enables the lazy, cookieless analytics seam.
-#VITE_POSTHOG_KEY=phc_xxxxxxxx
-# Override the default EU ingestion host.
-#VITE_POSTHOG_HOST=https://eu.i.posthog.com
+| Var | Effect when set |
+| --- | --- |
+| `VITE_APP_URL` | Public origin, no trailing slash. Unlocks absolute OG images, the home canonical, and `dist/sitemap.xml`. Inert behind Access, which is where this deployment sits |
+| `VITE_API_BASE_URL` | HTTP origin for the API client. Unset means same-origin, which is what the container serves |
+| `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST` | Enables the lazy analytics seam. The package is not installed, so this is inert |
+| `VITE_SENTRY_DSN` | Enables the lazy error-reporting seam. The package is not installed, so this is inert |
 
-# --- Error reporting (requires `pnpm add @sentry/react`) --------------------
-# Sentry DSN; enables the lazy error-reporting seam (support IDs become
-# searchable server-side). Inert without it.
-#VITE_SENTRY_DSN=https://xxxxxxxx@o0.ingest.sentry.io/0
+## Server, runtime
 
-# --- Enterprise SSO (requires `pnpm add @workos-inc/authkit-react`) ----------
-# WorkOS Client ID (client_...); enables the AuthKit SPA seam.
-#VITE_WORKOS_CLIENT_ID=client_xxxxxxxx
-# Must match a Redirect URI in the WorkOS Dashboard exactly.
-#VITE_WORKOS_REDIRECT_URI=http://localhost:5173
-# Custom Authentication API hostname, only if configured in WorkOS.
-#VITE_WORKOS_API_HOSTNAME=auth.example.com
+Read by Django in `api/percontra/settings.py` unless noted.
 
-```
+| Var | Default | Effect |
+| --- | --- | --- |
+| `PERCONTRA_DB` | `data/percontra.duckdb` | Ingested workbook content |
+| `PERCONTRA_MIGRATION_DB` | `data/migration.duckdb` | The service log: runs, decisions, approvals, submissions |
+| `PERCONTRA_WEB_DIR` | unset | Built SPA for WhiteNoise to serve. Unset means API only |
+| `PERCONTRA_SECRET_KEY` | random per process | Django secret. Leaving it unset invalidates sessions on restart, which is fine for the demo and wrong for anything durable |
+| `PERCONTRA_DEBUG` | off | `1` turns on Django debug. Never in a deployed instance |
+| `PERCONTRA_ALLOWED_HOSTS` | `*` | Comma-separated `ALLOWED_HOSTS` |
+| `PERCONTRA_EDGE_TOKEN` | unset | Shared secret the edge Worker sends as `X-Edge-Auth` (`api/percontra/edge_auth.py`). **Unset disables the check**, which is what lets local development run with no Worker in front. Set but blank fails closed |
+| `PERCONTRA_LIVE` | `0` | `1` permits ERPNext writes. The CLI sets it from `--live` and `--post`; do not set it by hand |
 
-## Server (Worker) vars
+## ERPNext credentials
 
-The Worker reads its own vars, separate from the `VITE_*` build-time surface. They live in `wrangler.jsonc` `"vars"` (production; typed into `Env` by `pnpm cf-typegen`) and in a gitignored `.dev.vars` file at the repo root for local dev (`wrangler` and `@cloudflare/vite-plugin` both read it).
+Read by `api/percontra/adapters/destination/erpnext.py` from the repository-root
+`.env` or the process environment. Only the one authorised site is accepted, and
+redirects are refused rather than followed with credentials attached.
 
-```sh
-# WorkOS Client ID for server-side JWT verification (server/auth.ts). Not a
-# secret; same value as VITE_WORKOS_CLIENT_ID. Verification is keyless (JWKS),
-# so no WORKOS_API_KEY exists anywhere in this template. Unset: GET /api/session
-# answers 501 and /api/dashboard serves demo fixtures unguarded.
-#WORKOS_CLIENT_ID=client_xxxxxxxx
-```
+| Var | Notes |
+| --- | --- |
+| `ERPNEXT_URL` | Must equal the authorised site or every request is refused |
+| `ERPNEXT_API_KEY` | |
+| `ERPNEXT_API_SECRET` | Never logged; `Connection` marks both `repr=False` |
+
+## Edge Worker
+
+Set in `edge/wrangler.jsonc` (`ORIGIN`) and as a Worker secret (`EDGE_TOKEN`),
+not in any `.env`.
+
+| Var | Notes |
+| --- | --- |
+| `ORIGIN` | The Cloud Run URL the Worker forwards to |
+| `EDGE_TOKEN` | Sent as `X-Edge-Auth`; must match `PERCONTRA_EDGE_TOKEN` on the origin. `wrangler secret put EDGE_TOKEN` |
+
+The Access gate itself is configured in Cloudflare Zero Trust, not here. See
+[access-gate.md](../access-gate.md).
