@@ -5,6 +5,9 @@ RUN corepack enable
 COPY web/package.json web/pnpm-lock.yaml ./
 COPY web/ ./
 ARG VITE_APP_URL=https://percontra.dev
+# The Piper bridge API (piper/) runs as its own process; for the demo it is the
+# laptop behind this ngrok tunnel. Override at build time to point elsewhere.
+ARG VITE_PIPER_API_URL=https://broodily-artiodactylous-elsy.ngrok-free.dev
 RUN pnpm install --frozen-lockfile && pnpm build
 
 FROM python:3.14-slim AS runtime

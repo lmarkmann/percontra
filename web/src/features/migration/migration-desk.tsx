@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ErrorState } from "@/components/error-state";
@@ -218,6 +219,12 @@ export function MigrationDesk() {
 						<span className="text-caption text-muted-foreground">
 							Migration review
 						</span>
+						<Link
+							to="/bridge"
+							className="ml-auto text-caption text-muted-foreground underline-offset-4 hover:underline"
+						>
+							Live bridge
+						</Link>
 					</div>
 				</header>
 				<main

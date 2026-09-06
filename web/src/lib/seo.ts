@@ -41,6 +41,13 @@ export const routeSeo = {
 			"Every non-happy state the workbench can reach, rendered without a server.",
 		ogImage: site.defaultOgImage,
 	},
+	bridge: {
+		...routeMetadata.bridge,
+		title: `${site.name} | Bridge`,
+		description:
+			"Connect two accounting systems and move contacts, items and invoices between them.",
+		ogImage: site.defaultOgImage,
+	},
 	notFound: {
 		...routeMetadata.notFound,
 		title: `${site.name} | Not found`,

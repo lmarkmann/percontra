@@ -24,6 +24,7 @@ Inlined into the bundle. Public by construction.
 | --- | --- |
 | `VITE_APP_URL` | Public origin, no trailing slash. Unlocks absolute OG images, the home canonical, and `dist/sitemap.xml`. Inert behind Access, which is where this deployment sits |
 | `VITE_API_BASE_URL` | HTTP origin for the API client. Unset means same-origin, which is what the container serves |
+| `VITE_PIPER_API_URL` | Origin of the Piper bridge API (`piper/`), reached cross-origin from `/bridge`. Unset hides the bridge's live controls. The root `Dockerfile` defaults it to the ngrok tunnel used for the demo |
 | `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST` | Enables the lazy analytics seam. The package is not installed, so this is inert |
 | `VITE_SENTRY_DSN` | Enables the lazy error-reporting seam. The package is not installed, so this is inert |
 

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as IndexRouteImport } from "./routes/index"
 import { Route as SplatRouteImport } from "./routes/$"
+import { Route as BridgeRouteImport } from "./routes/bridge"
 import { Route as StatesRouteImport } from "./routes/states"
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const SplatRoute = SplatRouteImport.update({
   path: "/$",
   getParentRoute: () => rootRouteImport,
 } as any)
+const BridgeRoute = BridgeRouteImport.update({
+  id: "/bridge",
+  path: "/bridge",
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatesRoute = StatesRouteImport.update({
   id: "/states",
   path: "/states",
@@ -32,30 +38,34 @@ const StatesRoute = StatesRouteImport.update({
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
+  "/bridge": typeof BridgeRoute
   "/states": typeof StatesRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
+  "/bridge": typeof BridgeRoute
   "/states": typeof StatesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
+  "/bridge": typeof BridgeRoute
   "/states": typeof StatesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/$" | "/states"
+  fullPaths: "/" | "/$" | "/bridge" | "/states"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/$" | "/states"
-  id: "__root__" | "/" | "/$" | "/states"
+  to: "/" | "/$" | "/bridge" | "/states"
+  id: "__root__" | "/" | "/$" | "/bridge" | "/states"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  BridgeRoute: typeof BridgeRoute
   StatesRoute: typeof StatesRoute
 }
 
@@ -75,6 +85,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/bridge": {
+      id: "/bridge"
+      path: "/bridge"
+      fullPath: "/bridge"
+      preLoaderRoute: typeof BridgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     "/states": {
       id: "/states"
       path: "/states"
@@ -88,6 +105,7 @@ declare module "@tanstack/react-router" {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  BridgeRoute: BridgeRoute,
   StatesRoute: StatesRoute,
 }
 export const routeTree = rootRouteImport

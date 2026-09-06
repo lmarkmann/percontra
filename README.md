@@ -75,6 +75,25 @@ Live GBP connectivity is verified: synthetic journal **ACC-JV-2026-00001** was s
 
 A saved draft is not posted. `verified` requires a submitted journal with matching lines, exchange rates and currencies, plus matching account-level GL totals. A timeout yields `unknown`; a recovered draft stays `draft_saved`. No automatic draft resubmission, cancellation, deletion or reposting.
 
+## Live bridge: Xero and Zoho Books
+
+`/bridge` in the app is a second, live path: connect two real accounting systems by
+OAuth and move contacts, items and invoices from one to the other in either direction.
+It is served by [Piper](piper/README.md), a small FastAPI process in `piper/` that
+holds the provider connections per reviewer and runs the migration source →
+canonical record → destination, matching existing records so a re-run never
+duplicates. Anything adapted rather than copied is reported, not hidden.
+
+Piper is deliberately separate from the Django desk: different auth (its own JWT,
+because the provider tokens belong to a person), different runtime, and no shared
+state. The SPA reaches it at `VITE_PIPER_API_URL`; for the demo that is a laptop
+behind an ngrok tunnel, which both OAuth apps have registered as their callback host.
+
+```sh
+cd piper && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn app:app --port 8000 --reload
+```
+
 ## Structure and contract
 
 ```mermaid

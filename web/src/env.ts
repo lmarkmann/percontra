@@ -13,6 +13,8 @@ export const env = createEnv({
 		VITE_APP_URL: z.optional(z.url()),
 		/** Overrides the same-origin default when the API is deployed apart from the SPA. */
 		VITE_API_BASE_URL: z.optional(z.url()),
+		/** Origin of the Piper bridge API (Xero/Zoho OAuth + migration). Unset hides the bridge's live controls. */
+		VITE_PIPER_API_URL: z.optional(z.url()),
 	},
 	runtimeEnv: import.meta.env,
 	emptyStringAsUndefined: true,

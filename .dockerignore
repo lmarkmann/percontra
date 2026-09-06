@@ -16,3 +16,4 @@ data/
 scripts/
 *.duckdb
 edge/
+piper/

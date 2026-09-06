@@ -1,6 +1,6 @@
 export type RobotsDirective = "index,follow" | "noindex,nofollow";
 
-export type RouteMetadataKey = "home" | "states" | "notFound";
+export type RouteMetadataKey = "home" | "states" | "bridge" | "notFound";
 
 type RouteMetadataEntry = { path: string; robots: RobotsDirective };
 
@@ -17,10 +17,12 @@ export const routeMetadata: Record<RouteMetadataKey, RouteMetadataEntry> = {
 	home: { path: "/", robots: "noindex,nofollow" },
 	// Internal state review, not part of the product surface.
 	states: { path: "/states", robots: "noindex,nofollow" },
+	// Live accounting-system bridge (Xero <-> Zoho Books) backed by the Piper API.
+	bridge: { path: "/bridge", robots: "noindex,nofollow" },
 	notFound: { path: "/", robots: "noindex,nofollow" },
 };
 
-const routedKeys = ["states"] as const;
+const routedKeys = ["states", "bridge"] as const;
 
 export function matchRouteMetadata(pathname: string): RouteMetadataKey {
 	if (pathname === "" || pathname === "/") return "home";

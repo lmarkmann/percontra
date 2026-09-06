@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env          # XERO_*, ZOHO_*, optional JWT_SECRET
+    environment:
+      PIPER_DATA_DIR: /data
+    volumes:
+      - piper-data:/data    # piper.db, *_tokens.json, migration_state.json
+    restart: unless-stopped
+
+volumes:
+  piper-data:
