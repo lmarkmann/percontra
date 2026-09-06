@@ -11,7 +11,7 @@ test.describe("home entry journey", () => {
 		await expect(
 			page.getByRole("heading", { name: heroHeading }),
 		).toBeVisible();
-		await expect(page.getByRole("link", { name: "percontra." })).toBeVisible();
+		await expect(page.getByRole("link", { name: siteName })).toBeVisible();
 		// No API is running behind vite preview, so the desk lands in its failed
 		// state. The frame is what this asserts: chrome and hero paint either way.
 		await expect(
@@ -25,7 +25,7 @@ test.describe("home entry journey", () => {
 		await expect(
 			page.getByRole("heading", { name: "No entry on this side" }),
 		).toBeVisible();
-		await expect(page.getByText(siteName)).toBeVisible();
+		await expect(page.getByRole("img", { name: siteName })).toBeVisible();
 
 		await page.getByRole("link", { name: /back to the desk/i }).click();
 		await expect(page).toHaveURL("/");
