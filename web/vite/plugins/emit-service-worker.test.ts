@@ -21,7 +21,7 @@ describe("precacheFromBuildHtml", () => {
 				"main-ghi789.css",
 				"inter-latin-wght-normal-font.woff2",
 				"inter-latin-ext-wght-normal-font.woff2",
-				"charter_regular-font.woff2",
+				"test-newzald-book-font.woff2",
 			]),
 		).toEqual([
 			"/",
@@ -29,7 +29,7 @@ describe("precacheFromBuildHtml", () => {
 			"/assets/react-def456.js",
 			"/assets/main-ghi789.css",
 			"/assets/inter-latin-wght-normal-font.woff2",
-			"/assets/charter_regular-font.woff2",
+			"/assets/test-newzald-book-font.woff2",
 		]);
 	});
 

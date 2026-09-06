@@ -25,22 +25,22 @@ test("preloadFontAssets excludes the unicode-range-gated latin-ext face", () => 
 		preloadFontAssets([
 			"assets/inter-latin-wght-normal-a.woff2",
 			"assets/inter-latin-ext-wght-normal-b.woff2",
-			"assets/charter_regular-c.woff2",
+			"assets/test-newzald-book-c.woff2",
 		]),
 	).toEqual([
 		"assets/inter-latin-wght-normal-a.woff2",
-		"assets/charter_regular-c.woff2",
+		"assets/test-newzald-book-c.woff2",
 	]);
 });
 
 describe("preloadFontsPlugin", () => {
-	it("emits preload links for Inter latin and Charter regular only", () => {
+	it("emits preload links for Inter latin and Test Newzald Book only", () => {
 		expect(
 			runTransform([
 				"assets/inter-latin-wght-normal-a1b2c3.woff2",
-				"assets/charter_regular-d4e5f6.woff2",
-				"assets/charter_italic-g7h8i9.woff2",
-				"assets/charter_bold-j1k2l3.woff2",
+				"assets/test-newzald-book-d4e5f6.woff2",
+				"assets/test-newzald-book-italic-g7h8i9.woff2",
+				"assets/test-newzald-bold-j1k2l3.woff2",
 				"assets/main-x1y2z3.js",
 			]),
 		).toEqual([
@@ -61,7 +61,7 @@ describe("preloadFontsPlugin", () => {
 					rel: "preload",
 					as: "font",
 					type: "font/woff2",
-					href: "/assets/charter_regular-d4e5f6.woff2",
+					href: "/assets/test-newzald-book-d4e5f6.woff2",
 					crossorigin: "",
 				},
 				injectTo: "head",

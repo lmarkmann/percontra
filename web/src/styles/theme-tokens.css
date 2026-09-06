@@ -3,12 +3,13 @@
 @custom-variant hover-fine (@media (hover: hover) and (pointer: fine));
 
 /* Metric-matched fallback faces so text set in the system font wraps where the
-   web font will (no reflow when Inter/Charter arrive). Values computed with
+   web font will (no reflow when Inter/Newzald arrive). Values computed with
    fontaine's formula from @capsizecss/metrics 4.1.0 (Arial, Georgia, Inter)
-   and the local charter_regular.woff2; Inter-over-Arial agrees with the
-   published fontaine/next-font output (107.4% / 90.2% / 22.48%) within the
-   metrics sample drift. Lives here (not the font CSS files) so critical.css
-   inlines the fallbacks for the static shell. */
+   and font_metrics.py on test-newzald-book.woff2 (Georgia's width sample was
+   incomplete there, so the tool fell back to xAvgCharWidth); Inter-over-Arial
+   agrees with the published fontaine/next-font output (107.4% / 90.2% / 22.48%)
+   within the metrics sample drift. Lives here (not the font CSS files) so
+   critical.css inlines the fallbacks for the static shell. */
 @font-face {
 	font-family: "Inter Fallback";
 	src: local("Arial");
@@ -19,21 +20,21 @@
 }
 
 @font-face {
-	font-family: "Charter Fallback";
+	font-family: "Test Newzald Fallback";
 	src: local("Georgia");
-	size-adjust: 99.37%;
-	ascent-override: 98.62%;
-	descent-override: 23.75%;
+	size-adjust: 88.38%;
+	ascent-override: 109.53%;
+	descent-override: 30.78%;
 	line-gap-override: 0%;
 }
 
 @theme inline {
-	/* Inter = UI + headings. Charter = prose only (`font-prose`); faces in charter-font.css. */
+	/* Inter = UI + headings. Test Newzald = prose only (`font-prose`); faces in newzald-font.css. */
 	--font-heading: var(--font-sans);
 	--font-sans: "Inter Variable", "Inter Fallback", sans-serif;
 	--font-serif:
-		Charter, "Charter Fallback", "Bitstream Charter", "Sitka Text", "Iowan Old Style", Georgia,
-		"Times New Roman", serif;
+		"Test Newzald", "Test Newzald Fallback", "Bitstream Charter", "Sitka Text", "Iowan Old Style",
+		Georgia, "Times New Roman", serif;
 	--font-prose: var(--font-serif);
 	--font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
 	/* Semantic type scale (UI-first). Display fluid-scales for hero; rest fixed.

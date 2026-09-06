@@ -20,3 +20,6 @@ web/node_modules/
 # edge worker
 edge/node_modules/
 edge/.wrangler/
+
+# Klim test fonts: licence forbids redistribution, keep local only (ADR 042)
+web/src/fonts/*.woff2

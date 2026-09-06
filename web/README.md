@@ -101,7 +101,7 @@ Set `VITE_APP_URL` (no trailing slash) for absolute social images, home canonica
 
 ## Performance and quality gates
 
-First paint is engineered: a static home shell inlined in `index.html` paints before React boots, `src/critical.css` is inlined at build while the full stylesheet loads async, and fonts are self-hosted with `font-display: optional` plus metric-matched fallbacks (Inter for UI and headings, vendored Charter for prose), so a slow font never shifts layout.
+First paint is engineered: a static home shell inlined in `index.html` paints before React boots, `src/critical.css` is inlined at build while the full stylesheet loads async, and fonts are self-hosted with `font-display: optional` plus metric-matched fallbacks (Inter for UI and headings, Klim Test Newzald for prose, kept local by licence; see `src/fonts/KLIM-TEST-LICENCE.txt`), so a slow font never shifts layout.
 
 Four budget families fail CI when breached:
 

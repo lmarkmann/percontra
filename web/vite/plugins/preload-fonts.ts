@@ -1,11 +1,12 @@
 import type { Plugin } from "vite";
 
-// Faces on the first-paint path: Inter latin (UI) and Charter regular (prose).
-// Both use font-display: optional, which loses the cold-visit race without a
-// preload. Charter italic and bold stay lazy.
+// Faces on the first-paint path: Inter latin (UI) and Test Newzald Book
+// (prose). Both use font-display: optional, which loses the cold-visit race
+// without a preload. Newzald italic and bold stay lazy. The lookahead keeps
+// the italic (test-newzald-book-italic-*) out of the match.
 const PRELOAD_FONTS = [
 	/inter-latin-wght-normal.*\.woff2$/,
-	/charter_regular.*\.woff2$/,
+	/test-newzald-book(?!-italic).*\.woff2$/,
 ];
 
 export function preloadFontAssets(files: string[]): string[] {
