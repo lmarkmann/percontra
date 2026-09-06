@@ -8,7 +8,7 @@ const hitArea =
 	"relative after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2 after:content-['']";
 
 const buttonVariants = cva(
-	"group/button duration-fast inline-flex icon-default shrink-0 items-center justify-center rounded-lg border invalid-ring focus-ring border-transparent bg-clip-padding text-caption leading-ui font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,opacity] ease-out outline-none select-none active:not-aria-[haspopup]:scale-[0.96] disabled:pointer-events-none disabled:opacity-50",
+	"group/button inline-flex icon-default shrink-0 items-center justify-center rounded-lg border invalid-ring focus-ring border-transparent bg-clip-padding text-caption leading-ui font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-fast ease-out outline-none select-none active:not-aria-[haspopup]:scale-[0.96] disabled:pointer-events-none disabled:opacity-50",
 	{
 		variants: {
 			variant: {

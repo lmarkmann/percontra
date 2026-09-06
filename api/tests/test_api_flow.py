@@ -72,6 +72,12 @@ def test_http_review_release_export_evidence_and_invalidation(operator):
     assert states == {gap_batch: "stale", clean_batch: "approved"}
     history = client.get(f"/api/postings/{resolved['posting_id']}/evidence").json()
     assert [row["version"] for row in history["decisions"]] == [1, 2]
+    assert (
+        post(f"/api/releases/{gap_batch}/approve", {"author": "API test reviewer"}).status_code
+        == 200
+    )
+    turns = {row["id"]: row["turns"] for row in client.get("/api/overview").json()["batches"]}
+    assert turns == {gap_batch: 2, clean_batch: 1}
 
 
 def test_submission_requires_explicit_company_confirmation(operator, monkeypatch):

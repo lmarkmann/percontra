@@ -378,6 +378,7 @@ export function MigrationDesk() {
 										<div className="flex justify-between gap-3">
 											<span className="font-mono text-label text-muted-foreground">
 												BATCH {candidate.key.source_batch_id}
+												{candidate.turns ? ` / TURN ${candidate.turns}` : ""}
 											</span>
 											<span
 												className={`text-label font-medium ${candidate.release?.state === "stale" ? "text-destructive" : "text-primary"}`}
@@ -441,7 +442,11 @@ export function MigrationDesk() {
 											</div>
 										))}
 									{batch?.release ? (
-										<SignedVsNow release={batch.release} rows={signedRows} />
+										<SignedVsNow
+											release={batch.release}
+											rows={signedRows}
+											turns={batch.turns}
+										/>
 									) : null}
 									<div className="max-h-96 overflow-auto">
 										<table className="w-full text-left text-caption">

@@ -39,6 +39,20 @@ export const STATUS_LABEL: Record<PostingStatus, string> = {
 	exported: "Exported",
 };
 
+/**
+ * Sort rank for the review table: rows owing the reviewer action float to the
+ * top of the scroll cage, resolved rows sink. Stale outranks everything
+ * because that is the state the product exists to catch.
+ */
+export const ATTENTION_RANK: Record<PostingStatus, number> = {
+	stale: 0,
+	blocked: 1,
+	"needs-decision": 2,
+	ready: 3,
+	approved: 4,
+	exported: 5,
+};
+
 /** Qualifier the brief attaches to a status, shown beside the label. */
 export const STATUS_NOTE: Partial<Record<PostingStatus, string>> = {
 	exported: "destination not checked",

@@ -17,6 +17,7 @@ export type Batch = {
 	rows: number;
 	statuses: Record<string, number>;
 	release: Release | null;
+	turns: number;
 	totals: Record<string, { debit: string; credit: string }>;
 };
 /** @public - reached through Overview.gaps, never imported by name. */

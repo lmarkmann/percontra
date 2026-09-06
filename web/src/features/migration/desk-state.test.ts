@@ -18,6 +18,7 @@ function batch(id: string, state: ReleaseState | null): Batch {
 		key: { legal_entity: `Entity ${id}`, source_batch_id: id },
 		rows: 10,
 		statuses: { ready: 10 },
+		turns: state === null ? 0 : 1,
 		release:
 			state === null
 				? null

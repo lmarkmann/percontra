@@ -19,7 +19,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"fieldset">) {
 			data-slot="input-group"
 			className={cn(
 				"group/input-group m-0 min-w-0 border-0 p-0",
-				"duration-fast relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input transition-[border-color,background-color,box-shadow] ease-out outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-disabled:bg-input/50 has-disabled:opacity-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:has-disabled:bg-input/80",
+				"relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input transition-[border-color,background-color,box-shadow] duration-fast ease-out outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-disabled:bg-input/50 has-disabled:opacity-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:has-disabled:bg-input/80",
 				formControlField,
 				formControlGroupFocus,
 				formControlGroupInvalid,

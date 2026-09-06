@@ -89,13 +89,17 @@ class MigrationService:
             grouped[digest(posting.batch_key.model_dump())].append(posting)
         return grouped
 
-    def release_for(self, batch, postings):
+    def releases_for(self, batch):
         identifier, _, _, _ = self.context()
-        candidates = [
+        return [
             Release.model_validate(row)
             for row in self.store.events("release", identifier)
             if digest(row["batch_key"]) == batch
         ]
+
+    def release_for(self, batch, postings):
+        identifier, _, _, _ = self.context()
+        candidates = self.releases_for(batch)
         if not candidates:
             return None
         previous = candidates[-1]
@@ -125,6 +129,9 @@ class MigrationService:
                     "rows": len(postings),
                     "statuses": dict(Counter(row.status for row in postings)),
                     "release": approval.model_dump(mode="json") if approval else None,
+                    "turns": sum(
+                        1 for candidate in self.releases_for(batch) if candidate.state == "approved"
+                    ),
                     "totals": {
                         currency: {key: str(value) for key, value in amounts.items()}
                         for currency, amounts in totals.items()
