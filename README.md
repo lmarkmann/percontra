@@ -2,6 +2,10 @@
 
 A migration review desk for fund accountants: resolve a mapping gap, approve a complete batch, export it, and trace any amount back to its source and decision versions.
 
+<p align="center">
+  <img width="612" height="101" alt="image" src="https://github.com/user-attachments/assets/86baa1e4-547c-4378-a066-4ad64f423579" />
+</p>
+
 [![Watch the video](https://img.youtube.com/vi/pciMnVqbwa0/maxresdefault.jpg)](https://youtu.be/pciMnVqbwa0)
 
 ## The problem
