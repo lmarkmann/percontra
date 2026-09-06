@@ -1,0 +1,204 @@
+/*
+  The Per Contra lockup: one object with two states, never both at once.
+
+  The double rule is the constant and only ever scales along its own line. The
+  block is unresolved ink. Going out it grows into the text box while the rules
+  extend, then a seam sweeps left to right with type on its left and block on
+  its right; coming back runs the same two beats in reverse order.
+
+  The seam is two overflow windows sliding in opposite directions with their
+  contents counter-translated, so the reveal edge is produced by transforms
+  alone. clip-path was the first implementation and repainted the serif glyphs
+  on the main thread every frame (docs/adr/043).
+
+  Geometry is in em, so font-size is the only size knob. The layer that has
+  left its window flips to `visibility: hidden` at the end of its sweep: a
+  discrete switch cannot interpolate, so the hidden layer can neither bleed a
+  half-pixel of its edge at rest nor drift during the sweep. A pixel of margin
+  was the alternative and produced both faults in turn.
+
+  --brand-lockup-width and the two mark scale factors are measured once per
+  instance in brand-lockup.tsx, after the face has loaded.
+*/
+.brand-lockup {
+	--brand-lockup-rule: 0.04em;
+	--brand-lockup-gap: 0.06em;
+	--brand-lockup-mark-width: 0.62em;
+	--brand-lockup-cap: 0.7em;
+
+	position: relative;
+	display: block;
+	width: var(--brand-lockup-width, 6em);
+	height: 1.06em;
+	font-family: var(--font-serif);
+	font-size: 1em;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.015em;
+	white-space: nowrap;
+	color: inherit;
+	/* Nothing paints until the measurement lands, so no instance ever flashes
+	   at its fallback width. */
+	opacity: 0;
+}
+
+.brand-lockup[data-measured="true"] {
+	opacity: 1;
+}
+
+.brand-lockup > * {
+	position: absolute;
+	left: 0;
+	will-change: transform;
+}
+
+.brand-lockup-rules {
+	bottom: 0;
+	box-sizing: border-box;
+	width: 100%;
+	height: calc(var(--brand-lockup-rule) * 2 + var(--brand-lockup-gap));
+	border-top: var(--brand-lockup-rule) solid currentColor;
+	border-bottom: var(--brand-lockup-rule) solid currentColor;
+	transform-origin: left center;
+}
+
+.brand-lockup-window {
+	bottom: 0.06em;
+	width: 100%;
+	height: 1em;
+	overflow: hidden;
+}
+
+.brand-lockup-window > * {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	will-change: transform;
+}
+
+.brand-lockup-slide {
+	height: 100%;
+}
+
+.brand-lockup-block {
+	position: absolute;
+	bottom: 0.14em;
+	left: 0;
+	width: 100%;
+	height: var(--brand-lockup-cap);
+	background: currentColor;
+	transform-origin: left bottom;
+	will-change: transform;
+}
+
+.brand-lockup-word {
+	height: 1em;
+	line-height: 1;
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-word-window {
+	visibility: hidden;
+	transform: translateX(-100%);
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-word {
+	transform: translateX(100%);
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-block-window {
+	visibility: visible;
+	transform: translateX(0);
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-slide {
+	transform: translateX(0);
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-block {
+	transform: scale(
+		var(--brand-lockup-mark-scale-x, 0.1),
+		var(--brand-lockup-mark-scale-y, 0.486)
+	);
+}
+
+.brand-lockup[data-state="mark"] .brand-lockup-rules {
+	transform: scaleX(var(--brand-lockup-mark-scale-x, 0.1));
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-word-window {
+	visibility: visible;
+	transform: translateX(0);
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-word {
+	transform: translateX(0);
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-block-window {
+	visibility: hidden;
+	transform: translateX(100%);
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-slide {
+	transform: translateX(-100%);
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-block {
+	transform: scale(1, 1);
+}
+
+.brand-lockup[data-state="word"] .brand-lockup-rules {
+	transform: scaleX(1);
+}
+
+/*
+  Transitions are declared on the state being entered, which is what gives each
+  direction its own running order: outward the block grows before the seam
+  sweeps, inward the seam sweeps before the block shrinks. The visibility flip
+  is delayed to the end of the sweep it belongs to.
+*/
+@media (prefers-reduced-motion: no-preference) {
+	.brand-lockup[data-state="word"] .brand-lockup-rules,
+	.brand-lockup[data-state="word"] .brand-lockup-block {
+		transition: transform var(--motion-medium) var(--ease-emphasized);
+	}
+
+	.brand-lockup[data-state="word"] .brand-lockup-word-window,
+	.brand-lockup[data-state="word"] .brand-lockup-word,
+	.brand-lockup[data-state="word"] .brand-lockup-slide {
+		transition: transform var(--motion-slow) var(--ease-emphasized) 240ms;
+	}
+
+	.brand-lockup[data-state="word"] .brand-lockup-block-window {
+		transition:
+			transform var(--motion-slow) var(--ease-emphasized) 240ms,
+			visibility 0s linear calc(var(--motion-slow) + 240ms);
+	}
+
+	.brand-lockup[data-state="mark"] .brand-lockup-block-window,
+	.brand-lockup[data-state="mark"] .brand-lockup-word,
+	.brand-lockup[data-state="mark"] .brand-lockup-slide {
+		transition: transform var(--motion-slow) var(--ease-emphasized);
+	}
+
+	.brand-lockup[data-state="mark"] .brand-lockup-word-window {
+		transition:
+			transform var(--motion-slow) var(--ease-emphasized),
+			visibility 0s linear var(--motion-slow);
+	}
+
+	.brand-lockup[data-state="mark"] .brand-lockup-rules,
+	.brand-lockup[data-state="mark"] .brand-lockup-block {
+		transition: transform var(--motion-medium) var(--ease-emphasized) 360ms;
+	}
+}
+
+/* Reduced motion keeps both rest states exact and swaps them instantly; the
+   index.css floor already clamps the durations. */
+@media (prefers-reduced-motion: reduce) {
+	.brand-lockup[data-state="mark"] .brand-lockup-word-window,
+	.brand-lockup[data-state="word"] .brand-lockup-block-window {
+		opacity: 0;
+	}
+}
