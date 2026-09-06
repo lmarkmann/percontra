@@ -12,4 +12,16 @@
 	"vars": {
 		"ORIGIN": "https://percontra-357272735706.europe-west2.run.app",
 	},
+	// Access itself is configured in Zero Trust, not here; this block only feeds
+	// `wrangler dev` a signed-in identity so the local Worker takes the same
+	// branch it takes in production. Removing it simulates a signed-out visitor.
+	"access": {
+		"dev": {
+			"aud": "percontra-dev",
+			"identity": {
+				"email": "operator@percontra.dev",
+				"name": "Local operator",
+			},
+		},
+	},
 }

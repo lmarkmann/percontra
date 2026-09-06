@@ -1,109 +1,134 @@
 # Closing the demo
 
-Two gates, and they are not equivalent. Pick by what you are actually trying to
-stop.
+One gate: **Cloudflare Access**, in front of the `percontra` Worker. An
+unauthenticated request never reaches the Worker, so it never reaches Cloud
+Run: the SPA bundle is not served, `/api/*` is not reachable, and the DuckDB
+data behind it is not queried. Whoever is signed in sees their address and a
+sign-out link in the app header.
 
-## The edge gate: actually closes the site
+There is no second gate. The in-app access-code overlay is gone: it sat behind
+real authentication, asked an already-signed-in reviewer for a shared secret,
+and never withheld anything, because the bundle and every API route shipped to
+whoever asked regardless.
 
-HTTP basic auth in `edge/proxy.ts`, in front of the Cloudflare Worker that
-proxies `percontra.dev` to Cloud Run. An unauthorized request never reaches the
-origin, so the SPA bundle is never served, `/api/*` is never reachable, and the
-DuckDB data behind it is never queried.
+## The parts
 
-Arm it with two Worker secrets. Leaving **both** unset passes every request
-through, which is the deliberate default. Setting one and leaving the other
-blank closes the site with a 503 rather than opening it; see the note below.
+| Piece | Where |
+| --- | --- |
+| The gate | Access application `Per Contra`, Zero Trust org `qmark.cloudflareaccess.com` |
+| Who it lets in | The application's allow policy, one email rule per person |
+| The login page | Cloudflare's, at `qmark.cloudflareaccess.com`; Google and one-time PIN both offered |
+| Identity in the app | `edge/proxy.ts` reads `ctx.access`, answers `GET /api/session` |
+| Identity in the UI | `web/src/components/signed-in-as.tsx` in the desk header |
+| Sign out | `/cdn-cgi/access/logout`, served by Cloudflare ahead of the Worker |
 
-Create the credential once, then upload it. The value never appears in the
-shell, in history, or in process arguments.
+The Worker does not re-check anything. `ctx.access` is `undefined` when Access
+did not run, and the honest reading of that is "the application was deleted",
+which is how the gate comes off: delete the Access application, and the site is
+open. Nothing needs redeploying to open or close it.
 
-```fish
-op item create --account YCFB3FTIOJBXXEMIXKC24PTKRQ --vault Developer \
-  --category Login --title 'percontra demo' \
-  --generate-password='letters,digits,32' username=percontra
-```
+## Creating the application
 
-```fish
-# A failed `op read` writes nothing to stdout and exits non-zero, but wrangler
-# accepts empty stdin and reports success. Assert the value is non-empty before
-# uploading it. This is not belt and braces: it is exactly how this gate once
-# went live with a blank password.
-#
-# The value stays in shell memory and never reaches disk, the command line, or
-# process arguments: `printf | wrangler` passes it on stdin, and `set -e` clears
-# it afterwards. An earlier version of this used a temp file, which on APFS
-# cannot be reliably erased once written.
-set -l pw (op read --account YCFB3FTIOJBXXEMIXKC24PTKRQ \
-  'op://Developer/percontra demo/password')
-and test -n "$pw"
-and printf '%s' 'percontra' | pnpm --dir edge exec wrangler secret put ACCESS_USER
-and printf '%s' "$pw" | pnpm --dir edge exec wrangler secret put ACCESS_PASSWORD
-and just deploy-edge
-set -e pw
-```
-
-Then prove it, rather than trusting the deploy output:
+Once, from the repo root. The worker id is stable; the two IdP ids are the
+Google and one-time PIN providers already configured in the org.
 
 ```fish
-curl -s -o /dev/null -w '%{http_code}\n' https://percontra.dev/
-curl -s -o /dev/null -w '%{http_code}\n' https://percontra.dev/api/health
+# The token never reaches the command line or shell history: curl reads the
+# header from stdin. A failed `op read` writes nothing, so assert non-empty
+# before spending the request.
+set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+and test -n "$token"
+and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
+  -X POST 'https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps' \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "type": "self_hosted",
+    "name": "Per Contra",
+    "destinations": [
+      { "type": "worker", "worker_id": "3d9f1e7d07ca44f09b0def06aa161548" },
+      { "type": "public", "uri": "percontra.dev" }
+    ],
+    "session_duration": "24h",
+    "auto_redirect_to_identity": false,
+    "allowed_idps": [
+      "afe1e1bb-c8bf-4f6c-9e5d-37572ef8c518",
+      "244ad546-cf13-4572-986b-d3d0715aa2ca"
+    ],
+    "policies": [{
+      "name": "Per Contra reviewers",
+      "decision": "allow",
+      "include": [{ "email": { "email": "luis.camran.markmann@gmail.com" } }]
+    }]
+  }'
+set -e token
 ```
 
-Both must be `401`. A `200` means the gate is not on, whatever wrangler said.
-A `503` means a secret went up blank; re-upload it and redeploy.
+Both destinations are listed on purpose. `worker` covers the Worker's own
+production and preview URLs; `public` covers the `percontra.dev` custom domain
+without depending on the first to extend to it.
 
-Remove it the same way:
+`auto_redirect_to_identity` stays false so the login page offers both Google and
+a one-time PIN. Instant redirect to Google is one click fewer for the two of us
+and a dead end for anyone reviewing from a non-Google address.
+
+Then prove it, rather than trusting the response:
 
 ```fish
-pnpm --dir edge exec wrangler secret delete ACCESS_PASSWORD
-just deploy-edge
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://percontra.dev/
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://percontra.dev/api/summary
 ```
 
-**A blank secret closes the site, it does not open it.** `wrangler secret put`
-uploads whatever it reads on stdin and reports success even when that is
-nothing, so a failed `op read` in a pipeline silently arms the gate with an
-empty password. Treating that as "no gate configured" is how the site served
-every request while looking configured. An unset pair is a decision; a blank
-one is an accident, so the Worker answers 503 and names the empty secret.
+Both must be `302` to `qmark.cloudflareaccess.com`. A `200` means the
+application is not enforcing on that path, whatever the API said.
 
-Caveat worth knowing before the demo: basic auth is a browser-chrome prompt, not
-a page you control, and it is remembered per origin for the session. Judges will
-see a native dialog rather than anything designed. If that matters for the video,
-unlock in the browser first and record after.
+## Adding someone
 
-## The in-app gate: a doormat, not a lock
-
-`src/components/access-gate.tsx`, armed by `VITE_ACCESS_CODE_SHA256`. It renders
-a code field over the workbench and remembers acceptance in `sessionStorage`.
-
-**It does not prevent access to anything.** The bundle, this module, and every
-API route are served to whoever asks; the gate only declines to render the UI.
-Anyone who opens devtools, disables JavaScript, or curls `/api/overview` walks
-straight past it. It is there to turn away someone who wandered onto the URL.
-
-The configured value is a SHA-256 hash rather than the code, so the code is not
-a plain string in the bundle for anyone who searches it. That is obfuscation,
-not encryption: whoever has the bundle has the hash, and a short code falls to a
-wordlist in seconds. Use a long one.
+One request per person, against the application's policy. Adding a reviewer is
+adding an `include` rule; the whole `include` array is replaced, so send every
+address that should keep working.
 
 ```fish
-printf '%s' 'the code you will share' | shasum -a 256
+set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+and test -n "$token"
+and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
+  -X PUT "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/$APP_ID/policies/$POLICY_ID" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "name": "Per Contra reviewers",
+    "decision": "allow",
+    "include": [
+      { "email": { "email": "luis.camran.markmann@gmail.com" } },
+      { "email": { "email": "someone.else@example.com" } }
+    ]
+  }'
+set -e token
 ```
 
-`VITE_*` values are read at **build** time, not run time, so setting this on the
-Cloud Run service does nothing. It has to reach `pnpm build`, which is why it is
-an `ARG` in the Dockerfile. Leaving it empty disables the gate, which is what
-local development wants.
+Whoever is added signs in with Google if the address is a Google account, or
+asks for a one-time PIN by email if it is not. Neither needs anything installed
+and neither needs a Cloudflare account.
 
-## Which to use
+## Opening the site
 
-The edge gate, if the concern is the anonymised client data. Nothing else on
-this list actually withholds it.
+Delete the Access application. Nothing else changes: the Worker keeps proxying,
+`/api/session` starts answering `{ "email": null }`, and the header falls back
+to its static label.
 
-The in-app gate is worth keeping alongside it only for the sentence it puts on
-screen: a native basic-auth prompt says nothing about what the site is or who to
-ask for access, and a passer-by who hits a browser dialog learns less than one
-who reads "this is a work in progress being shown to a few people".
+```fish
+set -l token (op read 'op://Developer/CLOUDFLARE_API_TOKEN/credential')
+and test -n "$token"
+and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
+  -X DELETE "https://api.cloudflare.com/client/v4/accounts/da6d99959e1dda5394e5e0df5aadc961/access/apps/$APP_ID"
+set -e token
+```
 
-Both come off before submission: the repo is public at that point and the deck
-warns that judges look for committed secrets.
+The demo repo is public at submission, so the gate comes off before then, or
+the judges cannot run what they are scoring.
+
+## Working on it locally
+
+`wrangler dev` has no Access in front of it. The `access.dev` block in
+`edge/wrangler.jsonc` hands the local Worker a fixed identity so it takes the
+signed-in branch; remove the block to see the signed-out one. Under `just dev`
+there is no Worker at all, Django answers `/api/session` with a 404, and the
+header shows its fallback label. All three are correct.

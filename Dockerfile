@@ -5,9 +5,6 @@ RUN corepack enable
 COPY web/package.json web/pnpm-lock.yaml ./
 COPY web/ ./
 ARG VITE_APP_URL=https://percontra.dev
-# Empty means no in-app gate. VITE_* values are read at build time, not at run
-# time, so setting this on the Cloud Run service does nothing: it has to be here.
-ARG VITE_ACCESS_CODE_SHA256=""
 RUN pnpm install --frozen-lockfile && pnpm build
 
 FROM python:3.14-slim AS runtime

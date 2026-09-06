@@ -4,6 +4,7 @@ import { ErrorState } from "@/components/error-state";
 import { LoadingSurface } from "@/components/loading-surface";
 import { MigrationSkeleton } from "@/components/migration-skeleton";
 import { ReviewQueueEmpty } from "@/components/review-queue-empty";
+import { SignedInAs } from "@/components/signed-in-as";
 import { StaleBanner } from "@/components/stale-banner";
 import { StatusMark, statusRowClass } from "@/components/status-mark";
 import { Button } from "@/components/ui/button";
@@ -184,9 +185,15 @@ export function MigrationDesk() {
 					>
 						percontra<span className="text-primary">.</span>
 					</a>
-					<span className="text-caption text-muted-foreground">
-						Migration review / Local operator
-					</span>
+					<div className="flex items-center gap-3">
+						<span className="text-caption text-muted-foreground">
+							Migration review
+						</span>
+						<span aria-hidden className="text-caption text-muted-foreground">
+							/
+						</span>
+						<SignedInAs fallback="Local operator" />
+					</div>
 				</div>
 			</header>
 			<main

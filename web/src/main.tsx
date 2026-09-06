@@ -4,7 +4,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import "./index.css";
-import { AccessGate } from "@/components/access-gate";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToasterGate } from "@/components/toaster-gate";
@@ -25,13 +24,12 @@ if ("requestIdleCallback" in window) {
 	setTimeout(scheduleOptionalSdks, 1);
 }
 
-// No service worker while the demo sits behind HTTP basic auth at the edge.
-// The worker answers navigations with respondWith(fetch(request)), a 401 is a
-// successful fetch rather than a network error, and a response delivered
-// through respondWith never raises the browser's auth dialog: the page goes
-// blank and can never prompt. edge/proxy.ts serves a kill switch at /sw.js to
-// retire the registrations that already shipped. Restore this when the gate
-// comes off, not before.
+// No service worker while the demo sits behind Cloudflare Access at the edge.
+// The worker answers navigations with respondWith(fetch(request)), which
+// swallows the login redirect: the page goes blank and can never send anyone to
+// the sign-in page. edge/proxy.ts serves a kill switch at /sw.js to retire the
+// registrations that already shipped. Restore this when the gate comes off, not
+// before.
 
 // non-null: #root is in index.html
 createRoot(document.getElementById("root")!).render(
@@ -39,10 +37,8 @@ createRoot(document.getElementById("root")!).render(
 		<ErrorBoundary>
 			<ThemeProvider>
 				<QueryClientProvider client={queryClient}>
-					<AccessGate>
-						<RouterProvider router={router} />
-						<ToasterGate />
-					</AccessGate>
+					<RouterProvider router={router} />
+					<ToasterGate />
 				</QueryClientProvider>
 			</ThemeProvider>
 		</ErrorBoundary>

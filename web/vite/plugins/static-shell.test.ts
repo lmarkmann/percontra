@@ -30,7 +30,7 @@ test("a static theme toggle, if present, keeps a 44px hit area", () => {
 	const toggle = html.match(
 		/<button[\s\S]*?id="static-theme-toggle"[\s\S]*?>/,
 	)?.[0];
-	// The access-gate shell ships without one. The boot script guards for that
+	// This shell ships without one. The boot script guards for that
 	// (`if (!button) return`), so absence is a valid shell, not a failure.
 	if (!toggle) return;
 	expect(toggle).toContain("relative");

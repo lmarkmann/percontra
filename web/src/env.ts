@@ -11,8 +11,6 @@ export const env = createEnv({
 		VITE_SENTRY_DSN: z.optional(z.url()),
 		/** Public origin for absolute OG/Twitter image URLs (no trailing slash). */
 		VITE_APP_URL: z.optional(z.url()),
-		/** SHA-256 of the demo access code, lowercase hex. Unset disables the gate; see src/lib/access-code.ts. */
-		VITE_ACCESS_CODE_SHA256: z.optional(z.string()),
 		/** Overrides the same-origin default when the API is deployed apart from the SPA. */
 		VITE_API_BASE_URL: z.optional(z.url()),
 	},
