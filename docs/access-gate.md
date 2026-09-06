@@ -102,7 +102,7 @@ and printf 'header = "Authorization: Bearer %s"\n' $token | curl -s --config - \
     "decision": "allow",
     "include": [
       { "email": { "email": "luis.camran.markmann@gmail.com" } },
-      { "email": { "email": "someone.else@example.com" } }
+      { "email": { "email": "riadmc@proton.me" } }
     ]
   }'
 set -e token
