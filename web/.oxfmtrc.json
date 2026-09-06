@@ -67,7 +67,6 @@
 		".agents/**",
 		".grok/**",
 		".tmp-*.mjs",
-		"prek.toml",
 		"pnpm-lock.yaml"
 	]
 }

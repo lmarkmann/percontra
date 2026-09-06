@@ -23,20 +23,25 @@ function runTransform(bundleKeys: string[] | null): TransformResult {
 test("preloadFontAssets excludes the unicode-range-gated latin-ext face", () => {
 	expect(
 		preloadFontAssets([
-			"assets/inter-latin-wght-normal-a.woff2",
-			"assets/inter-latin-ext-wght-normal-b.woff2",
-			"assets/test-newzald-book-c.woff2",
+			"assets/test-soehne-buch-a.woff2",
+			"assets/test-soehne-kraftig-b.woff2",
+			"assets/inter-latin-wght-normal-c.woff2",
+			"assets/inter-latin-ext-wght-normal-d.woff2",
+			"assets/test-newzald-book-e.woff2",
 		]),
 	).toEqual([
-		"assets/inter-latin-wght-normal-a.woff2",
-		"assets/test-newzald-book-c.woff2",
+		"assets/test-soehne-buch-a.woff2",
+		"assets/inter-latin-wght-normal-c.woff2",
+		"assets/test-newzald-book-e.woff2",
 	]);
 });
 
 describe("preloadFontsPlugin", () => {
-	it("emits preload links for Inter latin and Test Newzald Book only", () => {
+	it("emits preload links for Söhne Buch, Inter latin and Test Newzald Book only", () => {
 		expect(
 			runTransform([
+				"assets/test-soehne-buch-m3n4o5.woff2",
+				"assets/test-soehne-halbfett-p6q7r8.woff2",
 				"assets/inter-latin-wght-normal-a1b2c3.woff2",
 				"assets/test-newzald-book-d4e5f6.woff2",
 				"assets/test-newzald-book-italic-g7h8i9.woff2",
@@ -44,6 +49,17 @@ describe("preloadFontsPlugin", () => {
 				"assets/main-x1y2z3.js",
 			]),
 		).toEqual([
+			{
+				tag: "link",
+				attrs: {
+					rel: "preload",
+					as: "font",
+					type: "font/woff2",
+					href: "/assets/test-soehne-buch-m3n4o5.woff2",
+					crossorigin: "",
+				},
+				injectTo: "head",
+			},
 			{
 				tag: "link",
 				attrs: {

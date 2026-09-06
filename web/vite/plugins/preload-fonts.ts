@@ -1,10 +1,12 @@
 import type { Plugin } from "vite";
 
-// Faces on the first-paint path: Inter latin (UI) and Test Newzald Book
-// (prose). Both use font-display: optional, which loses the cold-visit race
-// without a preload. Newzald italic and bold stay lazy. The lookahead keeps
-// the italic (test-newzald-book-italic-*) out of the match.
+// Faces on the first-paint path: Test Söhne Buch (UI), Inter latin (the
+// punctuation Söhne's test cut lacks), and Test Newzald Book (prose). All use
+// font-display: optional, which loses the cold-visit race without a preload.
+// Söhne Kräftig and Halbfett, and Newzald italic and bold, stay lazy. The
+// lookahead keeps the italic (test-newzald-book-italic-*) out of the match.
 const PRELOAD_FONTS = [
+	/test-soehne-buch.*\.woff2$/,
 	/inter-latin-wght-normal.*\.woff2$/,
 	/test-newzald-book(?!-italic).*\.woff2$/,
 ];

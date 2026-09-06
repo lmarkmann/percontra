@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "./styles/inter-font.css";
+@import "./styles/soehne-font.css";
 @import "./styles/newzald-font.css";
 @import "./styles/theme-tokens.css";
 @import "./styles/brand-lockup.css";

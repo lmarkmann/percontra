@@ -23,3 +23,6 @@ edge/.wrangler/
 
 # Klim test fonts: licence forbids redistribution, keep local only (ADR 042)
 web/src/fonts/*.woff2
+
+# lm-ui polish and spatial captures: the reports commit, the images do not
+docs/frontend/proof/
