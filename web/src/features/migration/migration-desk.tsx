@@ -223,7 +223,7 @@ export function MigrationDesk() {
 				<main
 					id="main"
 					tabIndex={-1}
-					className="mx-auto max-w-7xl space-y-8 px-5 py-8 outline-none"
+					className="mx-auto w-full max-w-7xl space-y-8 px-5 py-8 outline-none"
 				>
 					<div className="flex flex-wrap items-end justify-between gap-5">
 						<div className="space-y-1">
