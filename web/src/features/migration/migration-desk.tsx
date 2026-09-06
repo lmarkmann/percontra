@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/sidebar";
 import { describeMigrationFailure } from "@/lib/migration-failure";
 import { ATTENTION_RANK, postingStatus } from "@/lib/posting-status";
+import { routeSeo } from "@/lib/seo";
+import { site } from "@/lib/site";
 
 import { DeskSidebar } from "./desk-sidebar";
 import {
@@ -95,6 +97,11 @@ export function MigrationDesk() {
 		}))
 		.toSorted((a, b) => ATTENTION_RANK[a.status] - ATTENTION_RANK[b.status]);
 	const gap = overview?.gaps.find((candidate) => candidate.row === gapRow);
+	useEffect(() => {
+		document.title = batch
+			? `${batch.key.legal_entity} | ${site.name}`
+			: routeSeo.home.title;
+	}, [batch]);
 	const signedRows =
 		overview && batch?.release
 			? boundDecisionRows(overview, batch.release)

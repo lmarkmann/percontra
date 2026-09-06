@@ -29,14 +29,14 @@
 			property="og:description"
 			content="Per Contra: migration sign-off for fund accounting. Resolve the decisions behind each posting, approve them, and see what a mapping change invalidates."
 		/>
-		<meta property="og:image" content="/og-image.svg" />
+		<meta property="og:image" content="/og-image.png" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content="Per Contra" />
 		<meta
 			name="twitter:description"
 			content="Per Contra: migration sign-off for fund accounting. Resolve the decisions behind each posting, approve them, and see what a mapping change invalidates."
 		/>
-		<meta name="twitter:image" content="/og-image.svg" />
+		<meta name="twitter:image" content="/og-image.png" />
 		<title>Per Contra</title>
 		<script>
 			// Theme boot + static-shell toggle (before React). Keep in sync with
@@ -142,30 +142,28 @@
 		<link rel="stylesheet" href="/src/critical.css" />
 	</head>
 	<body>
-		<!-- Static home shell: mirrors src/routes/index.tsx for fast LCP + early
-         navigation. Keep copy byte-identical to the React strings there
-         (the H1 carries a U+2011 non-breaking hyphen) or hydration flickers. -->
+		<!-- Static shell: mirrors the desk header in
+         src/features/migration/migration-desk.tsx for fast LCP. Keep the copy
+         byte-identical to the React strings there or the swap flickers. -->
 		<div id="root">
 			<div data-static-shell class="min-h-svh bg-background">
 				<main
 					id="main"
 					tabindex="-1"
-					class="mx-auto flex min-h-svh w-full max-w-sm flex-col justify-center px-6 outline-none safe-bottom safe-top"
+					class="mx-auto max-w-7xl space-y-8 px-5 py-8 outline-none"
 				>
-					<p
-						class="font-mono text-label font-medium tracking-label text-muted-foreground uppercase"
-					>
-						Per Contra
-					</p>
-					<h1
-						class="mt-3 text-title leading-title font-semibold tracking-title text-balance"
-					>
-						This demo is not open yet
-					</h1>
-					<p class="mt-2 text-caption text-muted-foreground">
-						It is a work in progress being shown to a few people. If you were
-						given a code, enter it below.
-					</p>
+					<div class="space-y-2">
+						<p class="text-label font-medium text-primary">
+							SOURCE / DECISION / RELEASE / RECEIPT
+						</p>
+						<h1 class="text-display font-semibold tracking-tight">
+							Know what you are signing off.
+						</h1>
+						<p class="max-w-2xl font-prose text-title text-muted-foreground">
+							Every amount has a source. Every override has an author. A changed
+							decision needs a fresh approval.
+						</p>
+					</div>
 				</main>
 			</div>
 		</div>

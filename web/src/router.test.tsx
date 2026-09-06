@@ -31,7 +31,7 @@ test("an unknown path renders the not-found surface", async () => {
 	});
 	await waitFor(() =>
 		expect(
-			screen.getByRole("heading", { name: /page not found/i }),
+			screen.getByRole("heading", { name: /no entry on this side/i }),
 		).toBeInTheDocument(),
 	);
 });

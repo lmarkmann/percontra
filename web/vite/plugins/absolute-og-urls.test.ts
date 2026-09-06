@@ -27,15 +27,15 @@ describe("absoluteOgUrlsPlugin", () => {
 	it("absolutizes social images and adds home URL metadata", () => {
 		const html = [
 			'<meta property="og:type" content="website" />',
-			'<meta property="og:image" content="/og-image.svg" />',
-			'<meta name="twitter:image" content="/og-image.svg" />',
+			'<meta property="og:image" content="/og-image.png" />',
+			'<meta name="twitter:image" content="/og-image.png" />',
 			"<title>App</title>",
 		].join("\n");
 
 		const transformed = transform(html, "https://app.example.com/");
 
 		expect(transformed).toContain(
-			'property="og:image" content="https://app.example.com/og-image.svg"',
+			'property="og:image" content="https://app.example.com/og-image.png"',
 		);
 		expect(transformed).toContain(
 			'property="og:url" content="https://app.example.com/"',
@@ -60,9 +60,9 @@ describe("absoluteOgUrlsPlugin", () => {
 
 		expect(
 			plugin.transformIndexHtml(
-				'<meta property="og:image" content="/og-image.svg" />',
+				'<meta property="og:image" content="/og-image.png" />',
 				{},
 			),
-		).toContain("https://production.example.com/og-image.svg");
+		).toContain("https://production.example.com/og-image.png");
 	});
 });

@@ -10,7 +10,7 @@ export const site = {
 	tagline: "Every posting shows its work.",
 	description:
 		"A sign-off workbench for fund migrations: every posting carries its source rows, the decisions it depends on, and whether it may leave.",
-	defaultOgImage: "/og-image.svg",
+	defaultOgImage: "/og-image.png",
 	/** Public logo path for Organization JSON-LD when origin is set. */
 	logoPath: "/favicon.svg",
 } as const;

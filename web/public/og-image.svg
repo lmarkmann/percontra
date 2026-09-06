@@ -1,20 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
-  <rect width="1200" height="630" fill="#f5f2ed"/>
-  <rect x="0" y="0" width="12" height="630" fill="#33644d"/>
-  <text
-    x="80"
-    y="280"
-    fill="#393a34"
-    font-family="ui-sans-serif, system-ui, sans-serif"
-    font-size="72"
-    font-weight="600"
-  >vite-template</text>
-  <text
-    x="80"
-    y="360"
-    fill="#58574e"
-    font-family="ui-sans-serif, system-ui, sans-serif"
-    font-size="36"
-  >Start design-forward, stay lean</text>
-  <rect x="80" y="420" width="120" height="8" rx="4" fill="#33644d"/>
+  <!-- Colors are the light theme's background, foreground, muted-foreground
+       and primary tokens from src/styles/theme-tokens.css, resolved to hex because
+       crawlers read no CSS. Regenerate og-image.png with magick after editing. -->
+  <rect width="1200" height="630" fill="#f5f2ec"/>
+  <rect x="96" y="236" width="72" height="48" fill="#33644d"/>
+  <rect x="96" y="291" width="72" height="5" fill="#33644d"/>
+  <rect x="96" y="303" width="72" height="5" fill="#33644d"/>
+  <text x="200" y="300" fill="#3b3933" font-family="Georgia, 'Times New Roman', serif" font-size="88" font-weight="700" letter-spacing="-1.5">Per Contra</text>
+  <text x="200" y="372" fill="#59564f" font-family="ui-sans-serif, system-ui, sans-serif" font-size="34">Every posting shows its work.</text>
 </svg>

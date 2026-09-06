@@ -4,6 +4,7 @@
 @import "./styles/base.css";
 
 @source "./routes/index.tsx";
+@source "./features/migration/migration-desk.tsx";
 @source "./routes/__root.tsx";
 @source "./components/site-header.tsx";
 @source "./components/skip-link.tsx";

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileQuestion } from "lucide-react";
 
+import { BrandLockup } from "@/components/brand-lockup";
 import { SiteHeader } from "@/components/site-header";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -8,7 +8,6 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
 } from "@/components/ui/empty";
 import { actionClass } from "@/lib/action-class";
 import { routeSeo, seoHead } from "@/lib/seo";
@@ -31,23 +30,21 @@ function NotFoundRoute() {
 			>
 				<Empty className="w-full border-0">
 					<EmptyHeader>
-						<EmptyMedia type="icon">
-							<FileQuestion />
-						</EmptyMedia>
+						<BrandLockup state="word" className="mx-auto text-primary" />
 						<h1
 							data-slot="empty-title"
 							className="font-heading text-body font-medium tracking-title"
 						>
-							Page not found
+							No entry on this side
 						</h1>
 						<EmptyDescription>
-							The URL you opened doesn&rsquo;t match any route in this app.
-							Check the address or head back home.
+							Per contra is the matching entry on the other side of the account.
+							This address has none. The desk is one click back.
 						</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
 						<Link to="/" className={cn(buttonVariants(), actionClass())}>
-							Back home
+							Back to the desk
 						</Link>
 					</EmptyContent>
 				</Empty>

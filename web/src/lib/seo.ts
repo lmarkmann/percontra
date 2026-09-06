@@ -30,7 +30,7 @@ export type RouteSeo = {
 export const routeSeo = {
 	home: {
 		...routeMetadata.home,
-		title: site.name,
+		title: `${site.name} | Migration review`,
 		description: site.description,
 		ogImage: site.defaultOgImage,
 	},

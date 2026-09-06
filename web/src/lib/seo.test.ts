@@ -13,7 +13,7 @@ import {
 	routeSeo,
 	seoHead,
 } from "@/lib/seo";
-import { getSiteOrigin, site } from "@/lib/site";
+import { getSiteOrigin } from "@/lib/site";
 
 test("getSiteOrigin strips trailing slash", () => {
 	expect(getSiteOrigin("https://example.com/")).toBe("https://example.com");
@@ -46,7 +46,7 @@ test("route SEO matching respects path segment boundaries", () => {
 test("seoHead includes title, description, robots, and social tags", () => {
 	const head = seoHead(routeSeo.home, { origin: undefined });
 	const titles = head.meta.filter((m) => "title" in m);
-	expect(titles).toEqual([{ title: site.name }]);
+	expect(titles).toEqual([{ title: routeSeo.home.title }]);
 	expect(
 		head.meta.some(
 			(m) => "name" in m && m.name === "robots" && m.content === "index,follow",

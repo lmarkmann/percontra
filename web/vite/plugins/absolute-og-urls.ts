@@ -25,12 +25,12 @@ export function absoluteOgUrlsPlugin(): Plugin {
 			const origin = raw.replace(/\/$/, "");
 			let next = html
 				.replaceAll(
-					'content="/og-image.svg"',
-					`content="${origin}/og-image.svg"`,
+					'content="/og-image.png"',
+					`content="${origin}/og-image.png"`,
 				)
 				.replaceAll(
-					"content='/og-image.svg'",
-					`content='${origin}/og-image.svg'`,
+					"content='/og-image.png'",
+					`content='${origin}/og-image.png'`,
 				);
 
 			if (!next.includes('property="og:url"')) {

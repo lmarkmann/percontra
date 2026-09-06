@@ -1,13 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { MigrationDesk } from "@/features/migration/migration-desk";
+import { routeSeo, seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-	head: () => ({
-		meta: [
-			{ title: "Percontra | Migration review" },
-			{ name: "robots", content: "noindex,nofollow" },
-		],
-	}),
+	head: () => seoHead(routeSeo.home),
 	component: MigrationDesk,
 });

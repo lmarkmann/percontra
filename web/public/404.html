@@ -5,7 +5,7 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="robots" content="noindex" />
-		<title>404 Page not found</title>
+		<title>Not found | Per Contra</title>
 		<style>
 			/* Mirrored from src/styles/theme-tokens.css; theme-fallback.test.ts guards drift. */
 			:root {
@@ -49,6 +49,11 @@
 				font-size: 0.875rem;
 				margin: 0 0 1.5rem;
 			}
+			svg {
+				display: block;
+				margin: 0 auto 1.25rem;
+				color: var(--link);
+			}
 			a {
 				color: var(--link);
 				font-size: 0.875rem;
@@ -59,9 +64,17 @@
 	</head>
 	<body>
 		<main>
-			<h1>404</h1>
-			<p>This page does not exist.</p>
-			<a href="/">Back to start</a>
+			<svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+				<rect x="0" y="0" width="36" height="24" fill="currentColor" />
+				<rect x="0" y="28" width="36" height="2.5" fill="currentColor" />
+				<rect x="0" y="33.5" width="36" height="2.5" fill="currentColor" />
+			</svg>
+			<h1>No entry on this side</h1>
+			<p>
+				Per contra is the matching entry on the other side of the account. This
+				address has none.
+			</p>
+			<a href="/">Back to the desk</a>
 		</main>
 	</body>
 </html>
