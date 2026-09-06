@@ -4,14 +4,18 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { loadEnv } from "vite";
 
-import { buildSitemapXml } from "../../src/lib/route-metadata";
+import {
+	buildSitemapXml,
+	indexableRoutePaths,
+} from "../../src/lib/route-metadata";
 
 export { buildSitemapXml };
 
 /**
- * When `VITE_APP_URL` is set, write `sitemap.xml` into the client out dir
- * (`dist/client/` under the Cloudflare plugin). Skipped without origin so we
- * never ship example.com locs.
+ * When `VITE_APP_URL` is set and at least one route is indexable, write
+ * `sitemap.xml` into the client out dir (`dist/client/` under the Cloudflare
+ * plugin). Skipped without origin so we never ship example.com locs, and
+ * skipped with nothing indexable so we never ship an empty urlset.
  */
 export function emitSitemapPlugin(): Plugin {
 	let appUrl = "";
@@ -24,13 +28,15 @@ export function emitSitemapPlugin(): Plugin {
 		},
 		closeBundle() {
 			if (!appUrl) return;
+			const paths = indexableRoutePaths();
+			if (paths.length === 0) return;
 			const origin = appUrl.replace(/\/$/, "");
 			const target = path.resolve(
 				this.environment.config.root,
 				this.environment.config.build.outDir,
 				"sitemap.xml",
 			);
-			writeFileSync(target, buildSitemapXml(origin), "utf8");
+			writeFileSync(target, buildSitemapXml(origin, paths), "utf8");
 		},
 	};
 }

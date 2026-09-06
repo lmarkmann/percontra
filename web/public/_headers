@@ -3,6 +3,11 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Robots-Tag: noindex,nofollow
+
+# noindex is origin-wide rather than per path: the whole origin sits behind
+# Cloudflare Access, so no route is reachable to crawl. A per-path list went
+# stale the moment routes moved, which is what this replaced.
 
 # CSP is deliberately absent: compose one per project from the origins actually
 # wired, never a generic policy. Recipe: docs/reference/deploy-checklist.md, "Composing the CSP".
@@ -16,15 +21,6 @@
 
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
-
-/showcase
-  X-Robots-Tag: noindex,nofollow
-
-/login
-  X-Robots-Tag: noindex,nofollow
-
-/dashboard
-  X-Robots-Tag: noindex,nofollow
 
 # Vite fingerprints everything under /assets/ (JS, CSS, fonts), so the content
 # can be cached forever; a content change ships a new filename. index.html is

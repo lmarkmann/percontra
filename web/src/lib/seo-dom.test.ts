@@ -1,7 +1,18 @@
+import type { RouteSeo } from "@/lib/seo";
+
 import { afterEach, expect, test } from "vitest";
 
 import { routeSeo, seoHead } from "@/lib/seo";
 import { applySeoHead } from "@/lib/seo-dom";
+
+// No routed page is indexable behind the Access gate, so the canonical and
+// JSON-LD paths need a literal to exercise them. See seo.test.ts.
+const indexableRoute: RouteSeo = {
+	path: "/",
+	title: "Indexable",
+	description: "A route a fork made public.",
+	robots: "index,follow",
+};
 
 afterEach(() => {
 	document.head.innerHTML = "";
@@ -9,23 +20,23 @@ afterEach(() => {
 });
 
 test("applySeoHead sets title, meta, and canonical from seoHead", () => {
-	const head = seoHead(routeSeo.home, {
+	const head = seoHead(indexableRoute, {
 		origin: "https://example.com",
 		includeJsonLd: true,
 	});
 	applySeoHead(head);
 
-	expect(document.title).toBe(routeSeo.home.title);
+	expect(document.title).toBe(indexableRoute.title);
 	expect(
 		document.head
 			.querySelector('meta[name="description"]')
 			?.getAttribute("content"),
-	).toBe(routeSeo.home.description);
+	).toBe(indexableRoute.description);
 	expect(
 		document.head
 			.querySelector('meta[property="og:title"]')
 			?.getAttribute("content"),
-	).toBe(routeSeo.home.title);
+	).toBe(indexableRoute.title);
 	expect(
 		document.head
 			.querySelector('link[rel="canonical"][data-seo="route"]')
@@ -40,14 +51,14 @@ test("applySeoHead sets title, meta, and canonical from seoHead", () => {
 
 test("applySeoHead drops prior route SEO links and JSON-LD on noindex routes", () => {
 	applySeoHead(
-		seoHead(routeSeo.home, {
+		seoHead(indexableRoute, {
 			origin: "https://example.com",
 			includeJsonLd: true,
 		}),
 	);
-	// The review queue is noindex: no canonical, no JSON-LD.
+	// The states review is noindex: no canonical, no JSON-LD.
 	applySeoHead(
-		seoHead(routeSeo.review, {
+		seoHead(routeSeo.states, {
 			origin: "https://example.com",
 		}),
 	);
@@ -60,5 +71,5 @@ test("applySeoHead drops prior route SEO links and JSON-LD on noindex routes", (
 			'script[type="application/ld+json"][data-seo="route"]',
 		),
 	).toBeNull();
-	expect(document.title).toBe(routeSeo.review.title);
+	expect(document.title).toBe(routeSeo.states.title);
 });

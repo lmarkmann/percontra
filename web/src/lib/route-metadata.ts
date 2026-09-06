@@ -1,17 +1,26 @@
 export type RobotsDirective = "index,follow" | "noindex,nofollow";
 
-export const routeMetadata = {
-	home: { path: "/", robots: "index,follow" },
-	review: { path: "/review", robots: "noindex,nofollow" },
-	release: { path: "/release", robots: "noindex,nofollow" },
+export type RouteMetadataKey = "home" | "states" | "notFound";
+
+type RouteMetadataEntry = { path: string; robots: RobotsDirective };
+
+// Nothing is indexable: the origin sits behind Cloudflare Access, so a crawler
+// never reaches a route. Home carries the same directive its own route head
+// emits, so the two writers into <head> cannot disagree.
+//
+// The annotation is a Record over the key union rather than `as const satisfies`
+// because either of those narrows `robots` to the one literal in use, which
+// makes the indexable filter below a provably-false comparison. Adding an entry
+// without widening the union is an excess-property error, so the two cannot
+// drift apart.
+export const routeMetadata: Record<RouteMetadataKey, RouteMetadataEntry> = {
+	home: { path: "/", robots: "noindex,nofollow" },
 	// Internal state review, not part of the product surface.
 	states: { path: "/states", robots: "noindex,nofollow" },
 	notFound: { path: "/", robots: "noindex,nofollow" },
-} as const satisfies Record<string, { path: string; robots: RobotsDirective }>;
+};
 
-export type RouteMetadataKey = keyof typeof routeMetadata;
-
-const routedKeys = ["review", "release", "states"] as const;
+const routedKeys = ["states"] as const;
 
 export function matchRouteMetadata(pathname: string): RouteMetadataKey {
 	if (pathname === "" || pathname === "/") return "home";
@@ -22,7 +31,7 @@ export function matchRouteMetadata(pathname: string): RouteMetadataKey {
 	return "notFound";
 }
 
-function indexableRoutePaths(): string[] {
+export function indexableRoutePaths(): string[] {
 	return Object.values(routeMetadata)
 		.filter((route) => route.robots === "index,follow")
 		.map((route) => route.path);
